@@ -552,6 +552,10 @@ def generate_forecasts():
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
 
+if "auto_generated" not in st.session_state:
+    generate_forecasts()
+    st.session_state.auto_generated = True
+    st.rerun()
 # Sidebar (keeping your existing sidebar)
 with st.sidebar:
     st.markdown("""
@@ -876,14 +880,26 @@ with right_col:
     st.markdown('<div class="section-header" style="font-size: 1rem;">RISK ASSESSMENT</div>', unsafe_allow_html=True)
     
     # Highest Risk Period
-    max_idx = hf_df['hf_blackout_probability'].idxmax()
-    max_row = hf_df.iloc[max_idx]
+    severity_priority = {
+    "R1": 1,
+    "R2": 2,
+    "R3": 3,
+    "R4": 4,
+    "R5": 5
+    }
+    hf_df['severity_score'] = hf_df['blackout_severity'].map(severity_priority)
+    hf_df_sorted = hf_df.sort_values(
+        by=['severity_score', 'hf_blackout_probability'],
+        ascending=[False, False]   # R5 → R1, then highest probability
+    )
+    max_row = hf_df_sorted.iloc[0]
+
     max_hour = int(max_row['hour'])
-    # Format time from timestamp
     max_time_str = pd.to_datetime(max_row['timestamp']).strftime('%H:%M')
     max_prob = max_row['hf_blackout_probability'] * 100
     max_severity = max_row['blackout_severity']
     max_class = max_row['flare_class']
+
     
     st.markdown(f"""
     <div class="glass-card" style="border-left: 3px solid #ff6b35; padding: 1rem;">
@@ -896,13 +912,18 @@ with right_col:
     """, unsafe_allow_html=True)
     
     # Lowest Risk Period
-    min_idx = hf_df['hf_blackout_probability'].idxmin()
-    min_row = hf_df.iloc[min_idx]
+    hf_df_sorted_lowest = hf_df.sort_values(
+    by=['severity_score', 'hf_blackout_probability'],
+    ascending=[True, True]   # R1 → R5, then lowest probability
+    )
+    min_row = hf_df_sorted_lowest.iloc[0]
+
     min_hour = int(min_row['hour'])
     min_time_str = pd.to_datetime(min_row['timestamp']).strftime('%H:%M')
     min_prob = min_row['hf_blackout_probability'] * 100
     min_severity = min_row['blackout_severity']
     min_class = min_row['flare_class']
+
     
     st.markdown(f"""
     <div class="glass-card" style="border-left: 3px solid #4ade80; padding: 1rem; margin-top: 1rem;">
