@@ -5,6 +5,7 @@ import plotly.express as px
 from datetime import datetime
 from pathlib import Path
 import subprocess
+import sys
 import numpy as np
 
 # Page configuration
@@ -526,14 +527,23 @@ def load_forecast_data():
 
 def generate_forecasts():
     """Generate both forecasts"""
-    with st.spinner("⚡ Generating solar flare forecast..."):
-        subprocess.run(["python", "generate_forecast.py"], capture_output=True)
+    try:
+        with st.spinner("⚡ Generating solar flare forecast..."):
+            result_solar = subprocess.run([sys.executable, "generate_forecast.py"], capture_output=True, text=True)
+            if result_solar.returncode != 0:
+                st.error(f"Solar Forecast Error:\nSTDERR:\n{result_solar.stderr}\nSTDOUT:\n{result_solar.stdout}")
+                return
     
-    with st.spinner("📡 Predicting HF radio blackouts..."):
-        subprocess.run(["python", "predict_hf_blackout.py"], capture_output=True)
-    
-    st.success("✅ Forecasts generated successfully!")
-    st.cache_data.clear()
+        with st.spinner("📡 Predicting HF radio blackouts..."):
+            result_hf = subprocess.run([sys.executable, "predict_hf_blackout.py"], capture_output=True, text=True)
+            if result_hf.returncode != 0:
+                st.error(f"HF Blackout Prediction Error:\nSTDERR:\n{result_hf.stderr}\nSTDOUT:\n{result_hf.stdout}")
+                return
+        
+        st.success("✅ Forecasts generated successfully!")
+        st.cache_data.clear()
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
 
 # Sidebar (keeping your existing sidebar)
 with st.sidebar:
