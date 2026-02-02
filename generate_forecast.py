@@ -58,7 +58,7 @@ def generate_24hour_forecast():
     df = pd.DataFrame(forecast_data)
     
     # Save to CSV
-    output_path = '/Users/sudeepaweerasena/Desktop/suryamodel/solar_flare_forecast_24h.csv'
+    output_path = 'solar_flare_forecast_24h.csv'
     df.to_csv(output_path, index=False)
     
     print(f"✅ Generated 24-hour forecast:")

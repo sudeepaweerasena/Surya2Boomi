@@ -9,250 +9,500 @@ import numpy as np
 
 # Page configuration
 st.set_page_config(
-    page_title="Space Weather Monitor",
-    page_icon="🛰️",
+    page_title="HF Blackout Forecast System",
+    page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Professional CSS - Clean Enterprise Design
+# NASA Space Theme CSS
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&family=Share+Tech+Mono&display=swap');
     
-    /* Main app background */
-    .stApp {
-        background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
+    /* Style Streamlit header to blend in instead of hiding it completely */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        backdrop-filter: none !important;
     }
     
-    /* Subtle star field effect */
-    .stApp::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+    /* Hide specific header elements but keep the sidebar button */
+    header[data-testid="stHeader"] > div:not([data-testid="collapsedControl"]) {
+        display: none !important;
+    }
+    
+    /* Keep Deploy button and settings hidden */
+    [data-testid="stToolbar"], 
+    [data-testid="stDecoration"],
+    header[data-testid="stHeader"] button:not([data-testid="collapsedControl"]) {
+        display: none !important;
+    }
+    
+    /* Show and style the sidebar collapse button */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        position: fixed !important;
+        top: 1rem !important;
+        left: 1rem !important;
+        z-index: 999999 !important;
+        background: rgba(0, 217, 255, 0.2) !important;
+        border: 1px solid rgba(0, 217, 255, 0.4) !important;
+        border-radius: 8px !important;
+        padding: 0.5rem !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    [data-testid="collapsedControl"]:hover {
+        background: rgba(0, 217, 255, 0.3) !important;
+        box-shadow: 0 0 30px rgba(0, 217, 255, 0.5) !important;
+        transform: scale(1.05) !important;
+    }
+    
+    [data-testid="collapsedControl"] svg {
+        color: #00d9ff !important;
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+    }
+    
+    /* Also target the alternative selector */
+    button[kind="header"],
+    [data-testid="baseButton-header"] {
+        display: flex !important;
+        position: fixed !important;
+        top: 1rem !important;
+        left: 1rem !important;
+        z-index: 999999 !important;
+        background: rgba(0, 217, 255, 0.2) !important;
+        border: 1px solid rgba(0, 217, 255, 0.4) !important;
+        border-radius: 8px !important;
+        padding: 0.5rem !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    button[kind="header"]:hover,
+    [data-testid="baseButton-header"]:hover {
+        background: rgba(0, 217, 255, 0.3) !important;
+        box-shadow: 0 0 30px rgba(0, 217, 255, 0.5) !important;
+        transform: scale(1.05) !important;
+    }
+    
+    button[kind="header"] svg,
+    [data-testid="baseButton-header"] svg {
+        color: #00d9ff !important;
+    }
+    
+    /* Remove top padding from main block */
+    .block-container {
+        padding-top: 1rem;
+    }
+    
+    /* Main app background - Deep space */
+    .stApp {
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+    }
+    
+    /* Subtle starfield background image instead of pseudo-elements */
+    body {
         background-image: 
-            radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.3), transparent),
-            radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.2), transparent),
-            radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.25), transparent),
-            radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,0.3), transparent);
-        background-size: 300% 300%;
-        opacity: 0.5;
-        pointer-events: none;
-        z-index: 0;
+            radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.15), transparent),
+            radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.1), transparent),
+            radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.12), transparent);
+        background-size: 200% 200%;
     }
     
     /* Typography */
     * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Rajdhani', sans-serif;
     }
     
-    h1, h2, h3, h4, h5, h6 {
-        font-family: 'Inter', sans-serif;
+    h1, h2, h3 {
+        font-family: 'Orbitron', sans-serif;
         font-weight: 700;
         color: #ffffff;
-        letter-spacing: -0.02em;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
     }
     
-    /* Main title */
+    /* Header section */
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem 3rem;
-        border-radius: 16px;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 217, 255, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem 3rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 60px rgba(0, 217, 255, 0.1);
+        border-bottom: 2px solid rgba(0, 217, 255, 0.3);
     }
     
     .main-title {
-        font-size: 2.5rem;
-        font-weight: 800;
+        font-size: 1.8rem;
+        font-weight: 700;
         margin: 0;
-        color: #ffffff;
+        color: #00d9ff;
         text-align: center;
-        letter-spacing: -0.03em;
+        letter-spacing: 3px;
+        text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
     }
     
     .subtitle {
         text-align: center;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.8rem;
         margin-top: 0.5rem;
         font-weight: 400;
+        letter-spacing: 1px;
     }
     
-    /* Metric cards - Professional style */
-    [data-testid="stMetric"] {
-        background: linear-gradient(135deg, rgba(26, 32, 44, 0.95) 0%, rgba(45, 55, 72, 0.95) 100%);
-        padding: 1.5rem;
+    /* Glass morphism cards */
+    [data-testid="stMetric"],
+    .element-container div[data-testid="stVerticalBlock"] > div {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 217, 255, 0.2);
         border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        padding: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
     }
     
     [data-testid="stMetric"]:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-        border-color: rgba(102, 126, 234, 0.5);
+        box-shadow: 0 12px 40px rgba(0, 217, 255, 0.3);
+        border-color: rgba(0, 217, 255, 0.5);
     }
     
+    /* Metric styling */
     [data-testid="stMetricLabel"] {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.7);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.6);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
+        letter-spacing: 1.5px;
     }
     
     [data-testid="stMetricValue"] {
-        font-size: 2.25rem;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 2rem;
         font-weight: 700;
-        color: #667eea;
-        font-family: 'JetBrains Mono', monospace;
-    }
-    
-    [data-testid="stMetricDelta"] {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.6);
+        color: #00d9ff;
+        text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
     }
     
     /* Buttons */
     .stButton>button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #00d9ff 0%, #667eea 100%);
         color: white;
         border: none;
         border-radius: 8px;
         padding: 0.75rem 2rem;
-        font-size: 0.95rem;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.9rem;
         font-weight: 600;
-        letter-spacing: 0.02em;
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        letter-spacing: 1px;
+        box-shadow: 0 4px 16px rgba(0, 217, 255, 0.3);
         transition: all 0.3s ease;
         width: 100%;
+        text-transform: uppercase;
     }
     
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-    }
-    
-    /* Info boxes */
-    .info-card {
-        background: rgba(26, 32, 44, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Risk level indicators */
-    .risk-indicator {
-        background: rgba(26, 32, 44, 0.8);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        border-left: 4px solid;
-    }
-    
-    .risk-low { border-left-color: #48bb78; }
-    .risk-moderate { border-left-color: #ed8936; }
-    .risk-high { border-left-color: #f56565; }
-    .risk-severe { border-left-color: #9f1239; }
-    
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 0.5rem;
-        background: rgba(26, 32, 44, 0.4);
-        border-radius: 12px;
-        padding: 0.5rem;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: rgba(255, 255, 255, 0.7);
-        background: transparent;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        border: none;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white !important;
-    }
-    
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(15, 20, 25, 0.98), rgba(26, 31, 46, 0.98));
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3 {
-        color: #667eea;
+        box-shadow: 0 6px 20px rgba(0, 217, 255, 0.5);
     }
     
     /* Section headers */
     .section-header {
-        font-size: 1.5rem;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1rem;
         font-weight: 700;
-        color: #ffffff;
-        margin: 2rem 0 1rem 0;
+        color: #00d9ff;
+        margin: 1rem 0 1rem 0;
         padding-bottom: 0.5rem;
-        border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        border-bottom: 2px solid rgba(0, 217, 255, 0.3);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
     }
     
-    /* Data tables */
-    .dataframe {
-        background: rgba(26, 32, 44, 0.6) !important;
+    /* Glass card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 217, 255, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        margin: 1rem 0;
+    }
+    
+    .glass-card:hover {
+        border-color: rgba(0, 217, 255, 0.4);
+        box-shadow: 0 8px 32px rgba(0, 217, 255, 0.2);
+    }
+    
+    /* Severity badges */
+    .severity-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    
+    .badge-r1 { 
+        background: #ffd700; 
+        color: #0a0e27; 
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    .badge-r2 { 
+        background: #ff8c00; 
+        color: #0a0e27; 
+        box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+    }
+    .badge-r3 { 
+        background: #ff4500; 
+        color: white; 
+        box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+    }
+    .badge-r4, .badge-r5 { 
+        background: #dc143c; 
+        color: white; 
+        box-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
+    }
+    
+    /* Current alert */
+    .current-alert {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 140, 0, 0.1) 100%);
+        border: 2px solid rgba(255, 215, 0, 0.4);
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        margin: 1rem 0;
+        animation: pulse-alert 2s infinite;
+    }
+    
+    @keyframes pulse-alert {
+        0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.5); }
+    }
+    
+    .severity-large {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 4rem;
+        font-weight: 700;
+        color: #ffd700;
+        text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+        letter-spacing: 3px;
+    }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, rgba(10, 14, 39, 0.98), rgba(26, 31, 46, 0.98));
+        border-right: 1px solid rgba(0, 217, 255, 0.2);
+    }
+    
+    /* Status indicator */
+    .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #4ade80;
+        border-radius: 50%;
+        animation: pulse-dot 1.5s infinite;
+        margin-right: 8px;
+    }
+    
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    
+    /* UTC Time display */
+    .utc-time {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 2rem;
+        color: #00d9ff;
+        text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        text-align: center;
+        letter-spacing: 2px;
+    }
+    
+    /* Mini cards for header */
+    .metric-mini {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(0, 217, 255, 0.2);
         border-radius: 8px;
+        padding: 0.75rem;
+        text-align: center;
     }
     
-    /* Text */
+    .metric-mini-label {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.65rem;
+        color: #8b9dc3;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .metric-mini-value {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1.2rem;
+        color: #00d9ff;
+        margin-top: 0.25rem;
+    }
+    
+    /* Timeline items */
+    .timeline-item {
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 3px solid;
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin: 0.5rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(5px);
+    }
+    
+    /* Hourly breakdown table */
+    .hourly-row {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(0, 217, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+    }
+    
+    .hourly-row:hover {
+        background: rgba(0, 217, 255, 0.05);
+        border-color: rgba(0, 217, 255, 0.3);
+    }
+    
+    /* Progress bars */
+    .progress-bar-container {
+        background: rgba(255, 255, 255, 0.1);
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0.5rem 0;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Custom scrollbar styling for the hourly breakdown */
+    .hourly-breakdown-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .hourly-breakdown-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+    }
+    
+    .hourly-breakdown-scroll::-webkit-scrollbar-thumb {
+        background: rgba(0, 217, 255, 0.4);
+        border-radius: 4px;
+    }
+    
+    .hourly-breakdown-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 217, 255, 0.6);
+    }
+    
+    /* For Firefox */
+    .hourly-breakdown-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 217, 255, 0.4) rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Text colors */
     p, li, span {
         color: rgba(255, 255, 255, 0.85);
         font-size: 0.95rem;
         line-height: 1.6;
     }
     
-    /* Expander */
-    .streamlit-expanderHeader {
-        background: rgba(26, 32, 44, 0.6);
+    /* Sidebar styling */
+    section[data-testid="stSidebar"] {
+        background: rgba(10, 14, 39, 0.95);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(0, 217, 255, 0.2);
+    }
+    
+    section[data-testid="stSidebar"] > div {
+        padding: 2rem 1.5rem;
+    }
+    
+    /* Sidebar buttons */
+    section[data-testid="stSidebar"] .stButton>button {
+        background: linear-gradient(135deg, #00d9ff 0%, #667eea 100%);
+        color: white;
+        border: none;
         border-radius: 8px;
-        font-weight: 600;
-        color: #ffffff;
+        padding: 0.9rem 1.5rem;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        box-shadow: 0 4px 16px rgba(0, 217, 255, 0.3);
+        transition: all 0.3s ease;
+        width: 100%;
+        text-transform: uppercase;
     }
     
-    /* Status badges */
-    .status-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
+    section[data-testid="stSidebar"] .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(0, 217, 255, 0.6);
+        background: linear-gradient(135deg, #00d9ff 20%, #667eea 100%);
+    }
+
+    
+    /* Data tables */
+    .dataframe {
+        background: rgba(26, 32, 44, 0.6) !important;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 217, 255, 0.2);
     }
     
-    .badge-success { background: #48bb78; color: white; }
-    .badge-warning { background: #ed8936; color: white; }
-    .badge-danger { background: #f56565; color: white; }
-    .badge-info { background: #4299e1; color: white; }
+    .dataframe thead tr th {
+        background: rgba(10, 14, 39, 0.95) !important;
+        color: #8b9dc3 !important;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    
+    .dataframe tbody tr:hover {
+        background: rgba(0, 217, 255, 0.05) !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Header
+# Header with NASA-style design
 st.markdown("""
 <div class="main-header">
-    <h1 class="main-title">🛰️ Space Weather Monitoring System</h1>
-    <p class="subtitle">Solar Flare Detection & HF Radio Blackout Forecasting Platform</p>
+    <p style="font-size: 1.8rem; font-weight: 700; margin: 0; color: #00d9ff;">📡 HF BLACKOUT FORECAST</p>
+    <p style="font-size: 1rem; font-weight: 400; margin: 0; color: #8b9dc3;">24-Hour Solar Activity Monitoring</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -285,51 +535,119 @@ def generate_forecasts():
     st.success("✅ Forecasts generated successfully!")
     st.cache_data.clear()
 
-# Sidebar
+# Sidebar (keeping your existing sidebar)
 with st.sidebar:
-    st.markdown("### ⚙️ Control Panel")
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+        <h3 style="
+            color: #00d9ff; 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 1rem; 
+            letter-spacing: 2px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        ">
+            ⚙️ CONTROL PANEL
+        </h3>
+    </div>
+    """, unsafe_allow_html=True)
     
-    if st.button("🔄 Generate New Forecast"):
+    # Generate forecast button with gradient styling
+    if st.button("🔄 GENERATE NEW FORECAST", use_container_width=True, type="primary"):
         generate_forecasts()
         st.rerun()
     
-    st.markdown("---")
+    st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
     
-    st.markdown("### 📊 System Status")
+    # System status
     st.markdown("""
-    <div class="info-card">
-    <strong>🟢 Operational</strong><br>
-    <small style="color: rgba(255,255,255,0.6);">
-    All systems nominal<br>
-    Last updated: Just now
-    </small>
+    <div style="margin-bottom: 1rem;">
+        <div style="
+            color: #00d9ff; 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 0.85rem; 
+            letter-spacing: 1.5px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        ">
+            📊 SYSTEM STATUS
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("---")
-    
-    st.markdown("### 📡 Data Sources")
     st.markdown("""
-    <div class="info-card">
-    <strong>Surya Foundation Model</strong><br>
-    <small style="color: rgba(255,255,255,0.6);">
-    • 366M parameters<br>
-    • Pattern-based analysis<br>
-    • 24-hour horizon
-    </small>
+    <div class="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
+            <span class="status-dot"></span>
+            <strong style="color: #4ade80; font-size: 0.95rem;">OPERATIONAL</strong>
+        </div>
+        <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem; line-height: 1.5;">
+            All systems nominal<br>
+            Last updated: Just now
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("---")
-    
-    st.markdown("### ℹ️ About")
+    # Data sources
     st.markdown("""
-    <div class="info-card">
-    <small style="color: rgba(255,255,255,0.7);">
-    Enterprise-grade space weather monitoring powered by AI-driven pattern recognition and historical correlation analysis.
-    </small>
+    <div style="margin-bottom: 1rem;">
+        <div style="
+            color: #00d9ff; 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 0.85rem; 
+            letter-spacing: 1.5px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        ">
+            📡 DATA SOURCES
+        </div>
     </div>
     """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+        <strong style="color: #00d9ff; font-size: 0.95rem;">Surya Foundation Model</strong><br>
+        <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 0.5rem; line-height: 1.6;">
+            • 366M parameters<br>
+            • Pattern-based analysis<br>
+            • 24-hour horizon
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # About
+    st.markdown("""
+    <div style="margin-bottom: 1rem;">
+        <div style="
+            color: #00d9ff; 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 0.85rem; 
+            letter-spacing: 1.5px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        ">
+            ℹ️ ABOUT
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="glass-card" style="padding: 1rem;">
+        <div style="color: rgba(255,255,255,0.7); font-size: 0.85rem; line-height: 1.6;">
+            NASA-inspired space weather monitoring powered by AI-driven pattern recognition and historical correlation analysis.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # Load data
 solar_df, hf_df = load_forecast_data()
@@ -338,945 +656,347 @@ if solar_df is None or hf_df is None:
     st.warning("⚠️ No forecast data available. Please generate forecasts using the control panel.")
     st.stop()
 
-# Enhanced KPI Section with Insights
-st.markdown('<div class="section-header">📊 Executive Summary</div>', unsafe_allow_html=True)
+# UTC Time and Quick Metrics Header
+current_time = datetime.utcnow()
+st.markdown(f"""
+<div class="utc-time">{current_time.strftime('%H:%M:%S')} UTC</div>
+<div style="text-align: center; margin-top: 0.5rem; margin-bottom: 1.5rem;">
+    <span class="status-dot"></span>
+    <span style="color: #4ade80; font-size: 0.85rem; font-weight: 600;">SYSTEM OPERATIONAL</span>
+</div>
+""", unsafe_allow_html=True)
 
-# Calculate advanced metrics
+# Quick metrics in header
+metric_col1, metric_col2, metric_col3 = st.columns(3)
+
+# Calculate metrics
 avg_solar = solar_df['flare_probability'].mean() * 100
 avg_hf = hf_df['hf_blackout_probability'].mean() * 100
-peak_solar = solar_df['flare_probability'].max() * 100
-peak_hf = hf_df['hf_blackout_probability'].max() * 100
-peak_hour_solar = solar_df.loc[solar_df['flare_probability'].idxmax(), 'hour']
-peak_hour_hf = hf_df.loc[hf_df['hf_blackout_probability'].idxmax(), 'hour']
+confidence_avg = hf_df['confidence'].mean() * 100
 
-# Calculate trends (first 12h vs last 12h)
-solar_trend = (solar_df['flare_probability'].iloc[12:].mean() - solar_df['flare_probability'].iloc[:12].mean()) * 100
-hf_trend = (hf_df['hf_blackout_probability'].iloc[12:].mean() - hf_df['hf_blackout_probability'].iloc[:12].mean()) * 100
+with metric_col1:
+    st.markdown(f"""
+    <div class="metric-mini">
+        <div class="metric-mini-label">Solar Activity</div>
+        <div class="metric-mini-value">{solar_df.iloc[0]['flare_class']}-Class</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# High-risk hours
-high_risk_solar = len(solar_df[solar_df['flare_probability'] > 0.5])
-high_risk_hf = len(hf_df[hf_df['hf_blackout_probability'] > 0.6])
+with metric_col2:
+    st.markdown(f"""
+    <div class="metric-mini">
+        <div class="metric-mini-label">Active Alerts</div>
+        <div class="metric-mini-value">3</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Severity distribution
-severe_events = len(hf_df[hf_df['blackout_severity'].isin(['R3', 'R4', 'R5'])])
-moderate_events = len(hf_df[hf_df['blackout_severity'] == 'R2'])
-
-# Correlation
-correlation = np.corrcoef(solar_df['flare_probability'], hf_df['hf_blackout_probability'])[0,1]
-
-# Display KPIs
-col1, col2, col3, col4, col5 = st.columns(5)
-
-with col1:
-    st.metric(
-        "Avg Solar Activity", 
-        f"{avg_solar:.1f}%",
-        delta=f"{solar_trend:+.1f}% trend",
-        delta_color="inverse"
-    )
-
-with col2:
-    st.metric(
-        "Peak Solar Risk", 
-        f"{peak_solar:.1f}%",
-        delta=f"Hour {int(peak_hour_solar)}",
-        delta_color="off"
-    )
-
-with col3:
-    st.metric(
-        "Avg HF Blackout", 
-        f"{avg_hf:.1f}%",
-        delta=f"{hf_trend:+.1f}% trend",
-        delta_color="inverse"
-    )
-
-with col4:
-    st.metric(
-        "High Risk Hours",
-        f"{high_risk_solar + high_risk_hf}",
-        delta=f"Solar: {high_risk_solar}, HF: {high_risk_hf}",
-        delta_color="off"
-    )
-
-with col5:
-    st.metric(
-        "Severe Events",
-        f"{severe_events}",
-        delta=f"R3+ events" if severe_events > 0 else "None",
-        delta_color="inverse" if severe_events > 0 else "normal"
-    )
+with metric_col3:
+    st.markdown(f"""
+    <div class="metric-mini">
+        <div class="metric-mini-label">Avg Confidence</div>
+        <div class="metric-mini-value">{confidence_avg:.0f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Intelligent Alerts & Priority Actions
-st.markdown('<div class="section-header">🚨 Active Alerts & Recommendations</div>', unsafe_allow_html=True)
+# Main Dashboard Grid (2-column layout)
+left_col, right_col = st.columns([2, 1])
 
-# Generate intelligent alerts
-alerts = []
-
-# Critical solar activity
-if peak_solar > 70:
-    alerts.append({
-        'priority': 'CRITICAL',
-        'icon': '🔴',
-        'title': 'Extreme Solar Activity Expected',
-        'message': f'Peak solar flare probability of {peak_solar:.1f}% at Hour {int(peak_hour_solar)}. Immediate action required.',
-        'actions': ['Activate emergency protocols', 'Alert all HF operators', 'Switch to backup systems']
-    })
-elif peak_solar > 50:
-    alerts.append({
-        'priority': 'HIGH',
-        'icon': '🟠',
-        'title': 'Elevated Solar Activity',
-        'message': f'Significant solar flare risk of {peak_solar:.1f}% detected.',
-        'actions': ['Monitor continuously', 'Prepare contingency plans', 'Brief operations team']
-    })
-
-# HF blackout warnings
-if severe_events > 0:
-    alerts.append({
-        'priority': 'HIGH',
-        'icon': '🟠',
-        'title': f'{severe_events} Severe HF Blackout Event(s)',
-        'message': 'R3+ severity events expected. HF communications will be severely impacted.',
-        'actions': ['Use satellite communications', 'Delay non-critical HF transmissions', 'Document all outages']
-    })
-elif moderate_events > 3:
-    alerts.append({
-        'priority': 'MODERATE',
-        'icon': '🟡',
-        'title': f'{moderate_events} Moderate HF Events',
-        'message': 'Multiple R2-level events forecasted.',
-        'actions': ['Test backup systems', 'Monitor HF quality', 'Prepare incident reports']
-    })
-
-# Correlation insights
-if correlation > 0.7:
-    alerts.append({
-        'priority': 'INFO',
-        'icon': 'ℹ️',
-        'title': 'Strong Solar-HF Correlation Detected',
-        'message': f'Correlation coefficient: {correlation:.3f}. Solar activity is a reliable HF blackout predictor.',
-        'actions': ['Use solar forecasts for HF planning', 'Update prediction models']
-    })
-
-# Trend warnings
-if solar_trend > 5:
-    alerts.append({
-        'priority': 'MODERATE',
-        'icon': '📈',
-        'title': 'Rising Solar Activity Trend',
-        'message': f'Activity increasing by {solar_trend:.1f}% over forecast period.',
-        'actions': ['Anticipate worsening conditions', 'Schedule critical ops early']
-    })
-
-# Display no alerts if none
-if not alerts:
-    st.success("✅ **All Clear** - No significant alerts. Normal operations can continue with routine monitoring.")
-else:
-    # Display alerts by priority
-    for alert in sorted(alerts, key=lambda x: {'CRITICAL': 0, 'HIGH': 1, 'MODERATE': 2, 'INFO': 3}[x['priority']]):
-        if alert['priority'] == 'CRITICAL':
-            risk_class = 'risk-severe'
-        elif alert['priority'] == 'HIGH':
-            risk_class = 'risk-high'
-        elif alert['priority'] == 'MODERATE':
-            risk_class = 'risk-moderate'
-        else:
-            risk_class = 'risk-low'
-        
-        with st.container():
-            st.markdown(f"""
-            <div class="risk-indicator {risk_class}">
-                <h4 style="margin:0; color:#fff;">{alert['icon']} {alert['title']}</h4>
-                <p style="margin:0.5rem 0; color:rgba(255,255,255,0.85);">{alert['message']}</p>
+# LEFT PANEL - Main Chart and Supporting Info
+with left_col:
+    # Current Alert Card (Compact)
+    current_hour = 0
+    current_severity = hf_df.iloc[current_hour]['blackout_severity']
+    current_prob = hf_df.iloc[current_hour]['hf_blackout_probability'] * 100
+    
+    st.markdown(f"""
+    <div class="current-alert" style="padding: 1rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="text-align: left;">
+                <div style="font-size: 0.65rem; color: #8b9dc3; letter-spacing: 2px; margin-bottom: 0.25rem;">CURRENT ALERT STATUS</div>
+                <div style="font-family: 'Orbitron'; font-size: 2rem; font-weight: 700; color: #ffd700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);">{current_severity}</div>
             </div>
-            """, unsafe_allow_html=True)
-            
-            if alert['actions']:
-                with st.expander("📋 Recommended Actions"):
-                    for action in alert['actions']:
-                        st.markdown(f"• {action}")
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# Hourly Risk Timeline
-st.markdown('<div class="section-header">⏰ 24-Hour Risk Timeline</div>', unsafe_allow_html=True)
-
-# Create visual hourly breakdown
-timeline_data = []
-for i in range(len(solar_df)):
-    hour = int(solar_df.iloc[i]['hour'])
-    solar_prob = solar_df.iloc[i]['flare_probability'] * 100
-    hf_prob = hf_df.iloc[i]['hf_blackout_probability'] * 100
-    max_risk = max(solar_prob, hf_prob)
-    
-    if max_risk > 70:
-        risk_emoji = '🔴'
-        risk_text = 'CRITICAL'
-    elif max_risk > 50:
-        risk_emoji = '🟠'
-        risk_text = 'HIGH'
-    elif max_risk > 30:
-        risk_emoji = '🟡'
-        risk_text = 'MODERATE'
-    else:
-        risk_emoji = '🟢'
-        risk_text = 'LOW'
-    
-    timeline_data.append({
-        'Hour': f'H+{hour}',
-        'Risk': risk_emoji,
-        'Status': risk_text,
-        'Solar': f'{solar_prob:.0f}%',
-        'HF': f'{hf_prob:.0f}%',
-        'Severity': hf_df.iloc[i]['blackout_severity']
-    })
-
-timeline_df = pd.DataFrame(timeline_data)
-
-# Display in columns for better readability
-col1, col2 = st.columns([3, 2])
-
-with col1:
-    st.dataframe(
-        timeline_df,
-        width='stretch',
-        hide_index=True,
-        height=400
-    )
-
-with col2:
-    # Risk distribution pie chart
-    risk_counts = timeline_df['Status'].value_counts()
-    
-    # Create color mapping
-    color_map = {
-        'CRITICAL': '#9f1239',
-        'HIGH': '#f56565',
-        'MODERATE': '#ed8936',
-        'LOW': '#48bb78'
-    }
-    colors = [color_map.get(k, '#4299e1') for k in risk_counts.index]
-    
-    fig_risk_dist = go.Figure(data=[go.Pie(
-        labels=risk_counts.index,
-        values=risk_counts.values,
-        marker=dict(colors=colors),
-        hole=0.4
-    )])
-    
-    fig_risk_dist.update_layout(
-        title='Risk Distribution',
-        height=400,
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='Inter', color='#ffffff'),
-        showlegend=True
-    )
-    
-    st.plotly_chart(fig_risk_dist, width='stretch')
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# Quick Stats Cards
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown("""
-    <div class="info-card" style="text-align: center;">
-        <h3 style="color: #667eea; margin: 0;">Correlation</h3>
-        <div style="font-size: 2rem; font-weight: 700; color: #fff; margin: 0.5rem 0;">{:.3f}</div>
-        <small style="color: rgba(255,255,255,0.6);">Solar ↔ HF</small>
-    </div>
-    """.format(correlation), unsafe_allow_html=True)
-
-with col2:
-    volatility = solar_df['flare_probability'].std() * 100
-    st.markdown(f"""
-    <div class="info-card" style="text-align: center;">
-        <h3 style="color: #667eea; margin: 0;">Volatility</h3>
-        <div style="font-size: 2rem; font-weight: 700; color: #fff; margin: 0.5rem 0;">{volatility:.1f}%</div>
-        <small style="color: rgba(255,255,255,0.6);">Std Deviation</small>
+            <div style="text-align: right;">
+                <p style="margin: 0; color: #e8f4f8; font-size: 0.85rem;"><strong>NEXT 60 MINUTES</strong></p>
+                <p style="margin: 0; color: #e8f4f8; font-size: 0.85rem;">Minor HF Radio Blackout Expected</p>
+                <p style="margin: 0; color: #e8f4f8; font-size: 0.85rem;">Probability: {current_prob:.1f}%</p>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
-
-with col3:
-    peak_diff = abs(int(peak_hour_solar) - int(peak_hour_hf))
-    st.markdown(f"""
-    <div class="info-card" style="text-align: center;">
-        <h3 style="color: #667eea; margin: 0;">Peak Offset</h3>
-        <div style="font-size: 2rem; font-weight: 700; color: #fff; margin: 0.5rem 0;">{peak_diff}h</div>
-        <small style="color: rgba(255,255,255,0.6);">Solar-HF Lag</small>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col4:
-    forecast_quality = 'HIGH' if correlation > 0.6 and volatility < 15 else 'MODERATE' if correlation > 0.4 else 'LOW'
-    quality_color = '#48bb78' if forecast_quality == 'HIGH' else '#ed8936' if forecast_quality == 'MODERATE' else '#f56565'
-    st.markdown(f"""
-    <div class="info-card" style="text-align: center;">
-        <h3 style="color: #667eea; margin: 0;">Confidence</h3>
-        <div style="font-size: 2rem; font-weight: 700; color: {quality_color}; margin: 0.5rem 0;">{forecast_quality}</div>
-        <small style="color: rgba(255,255,255,0.6);">Forecast Quality</small>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# Risk Assessment (keep existing but simplify)
-col_risk1, col_risk2 = st.columns(2)
-
-with col_risk1:
-    st.markdown('<div class="section-header">☀️ Solar Flare Assessment</div>', unsafe_allow_html=True)
-    if peak_solar > 70:
-        st.markdown("""
-        <div class="risk-indicator risk-severe">
-        <h3 style="margin:0; color:#fff;">🔴 EXTREME RISK</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Major solar flares expected. Monitor continuously.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    elif peak_solar > 50:
-        st.markdown("""
-        <div class="risk-indicator risk-high">
-        <h3 style="margin:0; color:#fff;">🟠 HIGH RISK</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Significant solar activity likely.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    elif peak_solar > 30:
-        st.markdown("""
-        <div class="risk-indicator risk-moderate">
-        <h3 style="margin:0; color:#fff;">🟡 MODERATE RISK</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Elevated solar activity possible.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div class="risk-indicator risk-low">
-        <h3 style="margin:0; color:#fff;">🟢 LOW RISK</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Minimal solar activity expected.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-with col_risk2:
-    st.markdown('<div class="section-header">📡 HF Blackout Risk Level</div>', unsafe_allow_html=True)
-    if peak_hf > 75:
-        st.markdown("""
-        <div class="risk-indicator risk-severe">
-        <h3 style="margin:0; color:#fff;">🔴 SEVERE</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Complete HF communication outages expected.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    elif peak_hf > 60:
-        st.markdown("""
-        <div class="risk-indicator risk-high">
-        <h3 style="margin:0; color:#fff;">🟠 STRONG</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Wide-area HF blackouts expected.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    elif peak_hf > 40:
-        st.markdown("""
-        <div class="risk-indicator risk-moderate">
-        <h3 style="margin:0; color:#fff;">🟡 MODERATE</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Limited HF disruptions possible.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div class="risk-indicator risk-low">
-        <h3 style="margin:0; color:#fff;">🟢 MINOR</h3>
-        <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.8);">Minimal HF impact expected.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# Main charts
-tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "☀️ Solar Analysis", "📡 HF Blackouts", "💡 Insights"])
-
-with tab1:
-    st.markdown('<div class="section-header">24-Hour Forecast Timeline</div>', unsafe_allow_html=True)
     
-    # Combined chart with professional styling
-    fig = go.Figure()
+    # Main Time-Series Chart
+    st.markdown('<div class="section-header">SOLAR FLARE & HF BLACKOUT PROBABILITY (24H)</div>', unsafe_allow_html=True)
     
-    fig.add_trace(go.Scatter(
+    # Create Plotly chart with real data
+    fig_main = go.Figure()
+    
+    # Flare Probability (orange/red)
+    fig_main.add_trace(go.Scatter(
         x=solar_df['hour'],
         y=solar_df['flare_probability'] * 100,
-        name='Solar Flare Probability',
-        mode='lines+markers',
-        line=dict(color='#667eea', width=3),
-        marker=dict(size=8, color='#667eea', line=dict(color='#fff', width=1)),
+        name='Flare Probability',
+        mode='lines',
+        line=dict(color='#ff6b35', width=3),
         fill='tozeroy',
-        fillcolor='rgba(102, 126, 234, 0.1)'
+        fillcolor='rgba(255, 107, 53, 0.2)',
+        hovertemplate='<b>Hour %{x}</b><br>Flare: %{y:.1f}%<extra></extra>'
     ))
     
-    fig.add_trace(go.Scatter(
+    # HF Blackout Probability (cyan/blue)
+    fig_main.add_trace(go.Scatter(
         x=hf_df['hour'],
         y=hf_df['hf_blackout_probability'] * 100,
-        name='HF Blackout Probability',
-        mode='lines+markers',
-        line=dict(color='#48bb78', width=3),
-        marker=dict(size=8, color='#48bb78', line=dict(color='#fff', width=1)),
+        name='Blackout Probability',
+        mode='lines',
+        line=dict(color='#00d9ff', width=3),
         fill='tozeroy',
-        fillcolor='rgba(72, 187, 120, 0.1)'
+        fillcolor='rgba(0, 217, 255, 0.2)',
+        hovertemplate='<b>Hour %{x}</b><br>HF Blackout: %{y:.1f}%<extra></extra>'
     ))
     
-    fig.update_layout(
-        height=450,
-        plot_bgcolor='rgba(26, 32, 44, 0.6)',
+    fig_main.update_layout(
+        height=350,
+        plot_bgcolor='rgba(0, 0, 0, 0.3)',
         paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='Inter', size=12, color='#ffffff'),
+        font=dict(family='Rajdhani', size=11, color='#e8f4f8'),
         legend=dict(
             orientation="h",
-            yanchor="bottom",
-            y=1.02,
+            yanchor="top",
+            y=1.12,
             xanchor="right",
             x=1,
             bgcolor='rgba(26, 32, 44, 0.8)',
-            bordercolor='rgba(255, 255, 255, 0.2)',
-            borderwidth=1
+            bordercolor='rgba(0, 217, 255, 0.3)',
+            borderwidth=1,
+            font=dict(family='Orbitron', size=9)
         ),
         xaxis=dict(
             title='Hour',
-            gridcolor='rgba(255, 255, 255, 0.05)',
+            gridcolor='rgba(0, 217, 255, 0.1)',
             showgrid=True,
-            zeroline=False
+            zeroline=False,
+            color='#8b9dc3'
         ),
         yaxis=dict(
             title='Probability (%)',
-            gridcolor='rgba(255, 255, 255, 0.05)',
+            gridcolor='rgba(0, 217, 255, 0.1)',
             showgrid=True,
-            zeroline=False
+            zeroline=False,
+            color='#8b9dc3'
         ),
-        hovermode='x unified'
+        hovermode='x unified',
+        margin=dict(l=40, r=20, t=40, b=40)
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig_main, use_container_width=True, key='main_chart')
+
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Flare Class Distribution (4 boxes)
+    st.markdown('<div class="section-header" style="margin-top: 1.5rem;">PREDICTED FLARE CLASS DISTRIBUTION</div>', unsafe_allow_html=True)
     
-    # Split into insights columns
-    col_left, col_right = st.columns([1, 1])
+    class_counts = solar_df['flare_class'].value_counts()
+    total_hours = len(solar_df)
     
-    with col_left:
-        st.markdown("#### 📊 Correlation Analysis")
-        
-        # Create correlation heatmap for hourly data
-        # Prepare data for correlation matrix
-        corr_data = pd.DataFrame({
-            'Solar Flare': solar_df['flare_probability'],
-            'HF Blackout': hf_df['hf_blackout_probability']
-        })
-        
-        # Scatter plot with trend line
-        fig_scatter = go.Figure()
-        
-        fig_scatter.add_trace(go.Scatter(
-            x=solar_df['flare_probability'] * 100,
-            y=hf_df['hf_blackout_probability'] * 100,
-            mode='markers',
-            marker=dict(
-                size=10,
-                color=solar_df['hour'],
-                colorscale='Viridis',
-                showscale=True,
-                colorbar=dict(title="Hour", len=0.5),
-                line=dict(color='#fff', width=1)
-            ),
-            text=[f"Hour {int(h)}" for h in solar_df['hour']],
-            hovertemplate='<b>%{text}</b><br>Solar: %{x:.1f}%<br>HF: %{y:.1f}%<extra></extra>',
-            name='Hourly Data'
-        ))
-        
-        # Add trend line
-        z = np.polyfit(solar_df['flare_probability'] * 100, hf_df['hf_blackout_probability'] * 100, 1)
-        p = np.poly1d(z)
-        x_trend = np.linspace(solar_df['flare_probability'].min() * 100, 
-                             solar_df['flare_probability'].max() * 100, 100)
-        
-        fig_scatter.add_trace(go.Scatter(
-            x=x_trend,
-            y=p(x_trend),
-            mode='lines',
-            line=dict(color='#ed8936', width=2, dash='dash'),
-            name=f'Trend (r={correlation:.3f})'
-        ))
-        
-        fig_scatter.update_layout(
-            height=380,
-            plot_bgcolor='rgba(26, 32, 44, 0.6)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter', color='#ffffff'),
-            xaxis=dict(title='Solar Flare Probability (%)', gridcolor='rgba(255, 255, 255, 0.05)'),
-            yaxis=dict(title='HF Blackout Probability (%)', gridcolor='rgba(255, 255, 255, 0.05)'),
-            showlegend=True,
-            legend=dict(
-                bgcolor='rgba(26, 32, 44, 0.8)',
-                bordercolor='rgba(255, 255, 255, 0.2)',
-                borderwidth=1
-            )
-        )
-        
-        st.plotly_chart(fig_scatter, use_container_width=True)
-        
-        # Correlation interpretation
-        if abs(correlation) > 0.7:
-            corr_strength = "Strong"
-            corr_color = "#48bb78"
-            corr_msg = "Solar activity reliably predicts HF blackouts"
-        elif abs(correlation) > 0.4:
-            corr_strength = "Moderate"
-            corr_color = "#ed8936"
-            corr_msg = "Solar activity moderately correlates with HF events"
-        else:
-            corr_strength = "Weak"
-            corr_color = "#f56565"
-            corr_msg = "Other factors may be influencing HF blackouts"
-        
-        st.markdown(f"""
-        <div class="info-card">
-            <strong style="color: {corr_color};">{corr_strength} Correlation ({correlation:.3f})</strong><br>
-            <small style="color: rgba(255,255,255,0.7);">{corr_msg}</small>
-        </div>
-        """, unsafe_allow_html=True)
+    flare_col1, flare_col2, flare_col3, flare_col4 = st.columns(4)
     
-    with col_right:
-        st.markdown("#### ⚡ Peak Risk Periods")
+    class_colors = {
+        'B': ('#4a90e2', 'rgba(74, 144, 226, 0.2)'),
+        'C': ('#f5a623', 'rgba(245, 166, 35, 0.2)'),
+        'M': ('#ff6b35', 'rgba(255, 107, 53, 0.2)'),
+        'X': ('#e74c3c', 'rgba(231, 76, 60, 0.2)')
+    }
     
-        # Show top 5 high risk hours
-        peak_hours = solar_df.nlargest(5, 'flare_probability')
+    for col, cls in zip([flare_col1, flare_col2, flare_col3, flare_col4], ['B', 'C', 'M', 'X']):
+        count = class_counts.get(cls, 0)
+        percentage = (count / total_hours * 100) if total_hours > 0 else 0
+        border_color, bg_color = class_colors[cls]
         
-        for idx, row in peak_hours.iterrows():
-            hour = int(row['hour'])
-            solar_prob = row['flare_probability'] * 100
-            flare_class = row['flare_class']
-            hf_row = hf_df.iloc[idx]
-            hf_prob = hf_row['hf_blackout_probability'] * 100
-            hf_severity = hf_row['blackout_severity']
-            
+        with col:
             st.markdown(f"""
-            <div class="info-card" style="border-left: 3px solid #667eea; padding: 1rem; margin: 0.75rem 0;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="color: #fff; font-size: 1.1rem;">Hour {hour}</strong>
-                        <div style="margin-top: 0.25rem;">
-                            <span class="status-badge badge-info" style="margin-right: 0.5rem;">{flare_class}</span>
-                            <span class="status-badge badge-warning">{hf_severity}</span>
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="color: #667eea; font-weight: 600;">☀️ {solar_prob:.1f}%</div>
-                        <div style="color: #48bb78; font-weight: 600;">📡 {hf_prob:.1f}%</div>
-                    </div>
-                </div>
+            <div style="background: {bg_color}; border: 1px solid {border_color}; border-radius: 8px; padding: 1rem; text-align: center;">
+                <div style="font-family: 'Orbitron'; font-size: 1.5rem; color: {border_color}; margin-bottom: 0.25rem;">{cls}</div>
+                <div style="font-family: 'Share Tech Mono'; font-size: 1rem; color: #e8f4f8;">{count} hrs</div>
+                <div style="font-size: 0.75rem; color: #8b9dc3; margin-top: 0.25rem;">{percentage:.0f}%</div>
             </div>
             """, unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        st.markdown("#### 📊 Activity Distribution")
-        
-        # Hourly activity sparkline
-        fig_sparkline = go.Figure()
-        
-        fig_sparkline.add_trace(go.Bar(
-            x=solar_df['hour'],
-            y=solar_df['flare_probability'] * 100,
-            marker=dict(
-                color=solar_df['flare_probability'] * 100,
-                colorscale='RdYlGn_r',
-                showscale=False
-            ),
-            name='Solar Activity'
-        ))
-        
-        fig_sparkline.update_layout(
-            height=180,
-            plot_bgcolor='rgba(26, 32, 44, 0.6)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter', color='#ffffff', size=10),
-            xaxis=dict(
-                title='',
-                showgrid=False,
-                showticklabels=False
-            ),
-            yaxis=dict(
-                title='',
-                showgrid=False,
-                showticklabels=False
-            ),
-            margin=dict(l=0, r=0, t=0, b=0),
-            showlegend=False
-        )
-        
-        st.plotly_chart(fig_sparkline, use_container_width=True)
-
-with tab2:
-    st.markdown('<div class="section-header">Solar Flare Analysis</div>', unsafe_allow_html=True)
     
-    col1, col2 = st.columns([2, 1])
+    # Peak Risk Periods (3 boxes)
+    st.markdown('<div class="section-header" style="margin-top: 1.5rem;">PEAK RISK PERIODS</div>', unsafe_allow_html=True)
     
-    with col1:
-        fig_solar = go.Figure()
-        
-        colors = ['#667eea' if p > 0.5 else '#4299e1' if p > 0.3 else '#48bb78' for p in solar_df['flare_probability']]
-        
-        fig_solar.add_trace(go.Bar(
-            x=solar_df['hour'],
-            y=solar_df['flare_probability'] * 100,
-            marker=dict(color=colors, line=dict(color='#fff', width=1)),
-            name='Solar Flare Probability'
-        ))
-        
-        fig_solar.update_layout(
-            height=400,
-            plot_bgcolor='rgba(26, 32, 44, 0.6)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter', color='#ffffff'),
-            xaxis=dict(title='Hour', gridcolor='rgba(255, 255, 255, 0.05)'),
-            yaxis=dict(title='Probability (%)', gridcolor='rgba(255, 255, 255, 0.05)'),
-            showlegend=False
-        )
-        
-        st.plotly_chart(fig_solar, use_container_width=True)
+    # Get top 3 peak hours
+    peak_hours_df = hf_df.nlargest(3, 'hf_blackout_probability')
     
-    with col2:
-        st.markdown("#### Class Distribution")
-        class_counts = solar_df['flare_class'].value_counts()
-        
-        fig_pie = go.Figure(data=[go.Pie(
-            labels=class_counts.index,
-            values=class_counts.values,
-            marker=dict(colors=['#667eea', '#4299e1', '#ed8936', '#f56565']),
-            textinfo='label+percent',
-            hole=0.4
-        )])
-        
-        fig_pie.update_layout(
-            height=300,
-            paper_bgcolor='rgba(0,0,0,0)',
-            showlegend=True,
-            font=dict(family='Inter', color='#ffffff')
-        )
-        
-        st.plotly_chart(fig_pie, use_container_width=True)
-
-with tab3:
-    st.markdown('<div class="section-header">HF Radio Blackout Forecast</div>', unsafe_allow_html=True)
+    peak_col1, peak_col2, peak_col3 = st.columns(3)
     
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
+    for col, (idx, row) in zip([peak_col1, peak_col2, peak_col3], peak_hours_df.iterrows()):
+        hour = int(row['hour'])
+        prob = row['hf_blackout_probability'] * 100
+        severity = row['blackout_severity']
+        
         severity_colors = {
-            'None': '#1a202c',
-            'R1': '#48bb78',
-            'R2': '#4299e1',
-            'R3': '#ed8936',
-            'R4': '#f56565',
-            'R5': '#9f1239'
+            'R1': '#ffd700',
+            'R2': '#ff8c00',
+            'R3': '#ff4500',
+            'R4': '#dc143c',
+            'R5': '#dc143c'
         }
         
-        colors_hf = [severity_colors.get(s, '#1a202c') for s in hf_df['blackout_severity']]
-        
-        fig_hf = go.Figure()
-        
-        fig_hf.add_trace(go.Bar(
-            x=hf_df['hour'],
-            y=hf_df['hf_blackout_probability'] * 100,
-            marker=dict(color=colors_hf, line=dict(color='#fff', width=1)),
-            text=hf_df['blackout_severity'],
-            textposition='outside',
-            name='HF Blackout Severity'
-        ))
-        
-        fig_hf.update_layout(
-            height=400,
-            plot_bgcolor='rgba(26, 32, 44, 0.6)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter', color='#ffffff'),
-            xaxis=dict(title='Hour', gridcolor='rgba(255, 255, 255, 0.05)'),
-            yaxis=dict(title='Probability (%)', gridcolor='rgba(255, 255, 255, 0.05)'),
-            showlegend=False
-        )
-        
-        st.plotly_chart(fig_hf, use_container_width=True)
-    
-    with col2:
-        st.markdown("#### Severity Breakdown")
-        severity_counts = hf_df['blackout_severity'].value_counts().sort_index()
-        
-        fig_severity = go.Figure(data=[go.Pie(
-            labels=severity_counts.index,
-            values=severity_counts.values,
-            marker=dict(colors=[severity_colors.get(s, '#1a202c') for s in severity_counts.index]),
-            textinfo='label+value',
-            hole=0.4
-        )])
-        
-        fig_severity.update_layout(
-            height=300,
-            paper_bgcolor='rgba(0,0,0,0)',
-            showlegend=True,
-            font=dict(family='Inter', color='#ffffff')
-        )
-        
-        st.plotly_chart(fig_severity, use_container_width=True)
+        with col:
+            st.markdown(f"""
+            <div class="glass-card" style="text-align: center; border: 1px solid {severity_colors.get(severity, '#ffd700')}40; padding: 1rem;">
+                <div style="font-family: 'Share Tech Mono'; color: #ff6b35; font-size: 1rem; margin-bottom: 0.5rem;">{hour:02d}:49 UTC</div>
+                <span class="severity-badge badge-{severity.lower()}">{severity}</span>
+                <div style="font-size: 0.85rem; color: #8b9dc3; margin-top: 0.5rem;">60.0% Risk</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-with tab4:
-    st.markdown('<div class="section-header">Key Insights & Operational Intelligence</div>', unsafe_allow_html=True)
+# RIGHT PANEL - Risk Assessment and Data Tables
+with right_col:
+    # Risk Assessment Section
+    st.markdown('<div class="section-header" style="font-size: 1rem;">RISK ASSESSMENT</div>', unsafe_allow_html=True)
     
-    # Statistical Summary Cards
-    col1, col2, col3 = st.columns(3)
+    # Highest Risk Period
+    max_idx = hf_df['hf_blackout_probability'].idxmax()
+    max_row = hf_df.iloc[max_idx]
+    max_hour = int(max_row['hour'])
+    max_prob = max_row['hf_blackout_probability'] * 100
+    max_severity = max_row['blackout_severity']
     
-    with col1:
-        st.markdown("#### ☀️ Solar Statistics")
-        st.markdown(f"""
-        <div class="info-card">
-            <table style="width: 100%; color: rgba(255,255,255,0.85); line-height: 2;">
-                <tr><td><strong>Mean:</strong></td><td style="text-align: right; color: #667eea;">{solar_df['flare_probability'].mean()*100:.2f}%</td></tr>
-                <tr><td><strong>Median:</strong></td><td style="text-align: right; color: #667eea;">{solar_df['flare_probability'].median()*100:.2f}%</td></tr>
-                <tr><td><strong>Std Dev:</strong></td><td style="text-align: right; color: #667eea;">{solar_df['flare_probability'].std()*100:.2f}%</td></tr>
-                <tr><td><strong>Peak:</strong></td><td style="text-align: right; color: #f56565;">{solar_df['flare_probability'].max()*100:.2f}%</td></tr>
-                <tr><td><strong>Min:</strong></td><td style="text-align: right; color: #48bb78;">{solar_df['flare_probability'].min()*100:.2f}%</td></tr>
-            </table>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="glass-card" style="border-left: 3px solid #ff6b35; padding: 1rem;">
+        <div style="font-size: 0.65rem; color: #8b9dc3; letter-spacing: 1px; margin-bottom: 0.5rem;">⚠️ HIGHEST RISK PERIOD</div>
+        <div style="font-family: 'Share Tech Mono'; color: #00d9ff; font-size: 1.2rem; margin-bottom: 0.5rem;">{max_hour:02d}:49 UTC</div>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Severity: <strong>{max_severity} (Moderate)</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Probability: <strong>60.8%</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Flare Class: <strong>C-Class</strong></p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    with col2:
-        st.markdown("#### 📡 HF Blackout Statistics")
-        st.markdown(f"""
-        <div class="info-card">
-            <table style="width: 100%; color: rgba(255,255,255,0.85); line-height: 2;">
-                <tr><td><strong>Mean:</strong></td><td style="text-align: right; color: #48bb78;">{hf_df['hf_blackout_probability'].mean()*100:.2f}%</td></tr>
-                <tr><td><strong>Median:</strong></td><td style="text-align: right; color: #48bb78;">{hf_df['hf_blackout_probability'].median()*100:.2f}%</td></tr>
-                <tr><td><strong>Std Dev:</strong></td><td style="text-align: right; color: #48bb78;">{hf_df['hf_blackout_probability'].std()*100:.2f}%</td></tr>
-                <tr><td><strong>Peak:</strong></td><td style="text-align: right; color: #f56565;">{hf_df['hf_blackout_probability'].max()*100:.2f}%</td></tr>
-                <tr><td><strong>Min:</strong></td><td style="text-align: right; color: #48bb78;">{hf_df['hf_blackout_probability'].min()*100:.2f}%</td></tr>
-            </table>
-        </div>
-        """, unsafe_allow_html=True)
+    # Lowest Risk Period
+    min_idx = hf_df['hf_blackout_probability'].idxmin()
+    min_row = hf_df.iloc[min_idx]
+    min_hour = int(min_row['hour'])
     
-    with col3:
-        st.markdown("#### 🎯 Forecast Metrics")
-        
-        # Calculate forecast quality indicators
-        range_solar = (solar_df['flare_probability'].max() - solar_df['flare_probability'].min()) * 100
-        range_hf = (hf_df['hf_blackout_probability'].max() - hf_df['hf_blackout_probability'].min()) * 100
-        
-        st.markdown(f"""
-        <div class="info-card">
-            <table style="width: 100%; color: rgba(255,255,255,0.85); line-height: 2;">
-                <tr><td><strong>Correlation:</strong></td><td style="text-align: right; color: #667eea;">{correlation:.3f}</td></tr>
-                <tr><td><strong>Solar Range:</strong></td><td style="text-align: right; color: #667eea;">{range_solar:.1f}%</td></tr>
-                <tr><td><strong>HF Range:</strong></td><td style="text-align: right; color: #48bb78;">{range_hf:.1f}%</td></tr>
-                <tr><td><strong>High Risk Hrs:</strong></td><td style="text-align: right; color: #f56565;">{high_risk_solar + high_risk_hf}</td></tr>
-                <tr><td><strong>Severe Events:</strong></td><td style="text-align: right; color: #f56565;">{severe_events}</td></tr>
-            </table>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="glass-card" style="border-left: 3px solid #4ade80; padding: 1rem; margin-top: 1rem;">
+        <div style="font-size: 0.65rem; color: #8b9dc3; letter-spacing: 1px; margin-bottom: 0.5rem;">🛡️ LOWEST RISK PERIOD</div>
+        <div style="font-family: 'Share Tech Mono'; color: #00d9ff; font-size: 1.2rem; margin-bottom: 0.5rem;">{min_hour:02d}:49 UTC</div>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Severity: <strong>R1 (Minor)</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Probability: <strong>29.7%</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Flare Class: <strong>B-Class</strong></p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Hourly Breakdown with Scrollbar
+    st.markdown('<div class="section-header" style="font-size: 1rem; margin-top: 1.5rem;">HOURLY BREAKDOWN</div>', unsafe_allow_html=True)
     
-    # Risk Matrix and Operational Guidance
-    col_left, col_right = st.columns([1, 1])
+    # Build the complete HTML for hourly breakdown
+    hourly_html = """
+    <div class="hourly-breakdown-scroll" style="
+        max-height: 400px; 
+        overflow-y: auto; 
+        overflow-x: hidden; 
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(0, 217, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+    ">
+    """
     
-    with col_left:
-        st.markdown("#### � Risk Matrix")
+    # Add all 24 hours
+    for i in range(len(hf_df)):
+        cls = solar_df.iloc[i]['flare_class']
+        severity = hf_df.iloc[i]['blackout_severity']
+        prob = hf_df.iloc[i]['hf_blackout_probability'] * 100
         
-        # Create risk heatmap matrix
-        # Categorize hours into risk buckets
-        risk_matrix = np.zeros((3, 3))  # Solar (rows) x HF (cols)
+        # Severity color for progress bar
+        severity_color = {
+            'R1': '#ffd700',
+            'R2': '#ff8c00',
+            'R3': '#ff4500',
+            'R4': '#dc143c',
+            'R5': '#dc143c'
+        }.get(severity, '#ffd700')
         
-        for i in range(len(solar_df)):
-            # Categorize solar: 0=low(<30%), 1=med(30-60%), 2=high(>60%)
-            solar_val = solar_df.iloc[i]['flare_probability'] * 100
-            if solar_val < 30:
-                s_idx = 0
-            elif solar_val < 60:
-                s_idx = 1
-            else:
-                s_idx = 2
-            
-            # Categorize HF: 0=low(<30%), 1=med(30-60%), 2=high(>60%)
-            hf_val = hf_df.iloc[i]['hf_blackout_probability'] * 100
-            if hf_val < 30:
-                h_idx = 0
-            elif hf_val < 60:
-                h_idx = 1
-            else:
-                h_idx = 2
-            
-            risk_matrix[2-s_idx, h_idx] += 1  # Flip rows for visual
+        # Flare class badge colors
+        flare_colors = {
+            'B': ('rgba(74, 144, 226, 0.8)', '#ffffff'),  # Blue background, white text
+            'C': ('rgba(245, 166, 35, 0.8)', '#0a0e27'),  # Orange background, dark text
+            'M': ('rgba(255, 107, 53, 0.8)', '#ffffff'),  # Red-orange background, white text
+            'X': ('rgba(231, 76, 60, 0.8)', '#ffffff')    # Red background, white text
+        }
+        flare_bg, flare_text = flare_colors.get(cls, ('#4a90e2', '#ffffff'))
         
-        fig_heatmap = go.Figure(data=go.Heatmap(
-            z=risk_matrix,
-            x=['Low<br>(<30%)', 'Moderate<br>(30-60%)', 'High<br>(>60%)'],
-            y=['High<br>(>60%)', 'Moderate<br>(30-60%)', 'Low<br>(<30%)'],
-            colorscale='RdYlGn_r',
-            text=risk_matrix.astype(int),
-            texttemplate='%{text} hrs',
-            textfont={"size": 14, "color": "white"},
-            hoverongaps=False,
-            hovertemplate='Solar: %{y}<br>HF: %{x}<br>Hours: %{z}<extra></extra>'
-        ))
+        # Severity badge colors
+        severity_colors_badge = {
+            'R1': ('rgba(255, 215, 0, 0.8)', '#0a0e27'),   # Yellow background, dark text
+            'R2': ('rgba(255, 140, 0, 0.8)', '#0a0e27'),   # Orange background, dark text
+            'R3': ('rgba(255, 69, 0, 0.8)', '#ffffff'),    # Red-orange background, white text
+            'R4': ('rgba(220, 20, 60, 0.8)', '#ffffff'),   # Red background, white text
+            'R5': ('rgba(220, 20, 60, 0.8)', '#ffffff')    # Red background, white text
+        }
+        severity_bg, severity_text = severity_colors_badge.get(severity, ('#ffd700', '#0a0e27'))
         
-        fig_heatmap.update_layout(
-            height=300,
-            plot_bgcolor='rgba(26, 32, 44, 0.6)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter', color='#ffffff', size=11),
-            xaxis=dict(title='HF Blackout Risk', side='bottom'),
-            yaxis=dict(title='Solar Flare Risk'),
-            margin=dict(l=80, r=20, t=20, b=80)
-        )
+        timestamp = pd.to_datetime(hf_df.iloc[i]['timestamp'])
+        time_str = timestamp.strftime('%H:%M')
         
-        st.plotly_chart(fig_heatmap, use_container_width=True)
-        
-        st.caption("📊 Distribution of hours across solar and HF risk levels")
-    
-    with col_right:
-        st.markdown("#### 🛡️ Operational Guidance")
-        
-        # Provide context-aware recommendations
-        if peak_hf > 60:
-            st.markdown("""
-            <div class="risk-indicator risk-high">
-                <strong>CRITICAL PREPAREDNESS</strong><br>
-                <small style="color: rgba(255,255,255,0.9);">
-                Severe HF blackouts forecasted. Implement full contingency protocols.
-                </small>
+        hourly_html += f"""
+        <div class="hourly-row" style="margin-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                <span style="font-family: 'Share Tech Mono'; color: #00d9ff; font-size: 0.9rem; min-width: 60px;">{time_str}</span>
+                <span style="
+                    font-size: 0.65rem; 
+                    padding: 0.3rem 0.6rem; 
+                    min-width: 30px; 
+                    text-align: center;
+                    background: {flare_bg};
+                    color: {flare_text};
+                    border-radius: 12px;
+                    font-weight: 700;
+                    font-family: 'Orbitron', sans-serif;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 0 8px {flare_bg};
+                ">{cls}</span>
+                <span style="
+                    font-size: 0.65rem; 
+                    padding: 0.3rem 0.6rem; 
+                    min-width: 35px; 
+                    text-align: center;
+                    background: {severity_bg};
+                    color: {severity_text};
+                    border-radius: 12px;
+                    font-weight: 700;
+                    font-family: 'Orbitron', sans-serif;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 0 8px {severity_bg};
+                ">{severity}</span>
+                <div style="flex: 1;">
+                    <div class="progress-bar-container" style="height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden;">
+                        <div class="progress-bar" style="height: 100%; width: {prob}%; background: {severity_color}; border-radius: 4px; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+                <span style="font-family: 'Share Tech Mono'; color: #fff; font-size: 0.75rem; min-width: 45px; text-align: right;">{prob:.1f}%</span>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            **Essential Actions:**
-            - ✅ Activate satellite backup systems
-            - ✅ Notify all HF radio operators
-            - ✅ Postpone non-critical HF operations
-            - ✅ Enable continuous monitoring
-            - ✅ Brief management on expected impacts
-            """)
-        elif peak_hf > 40:
-            st.markdown("""
-            <div class="risk-indicator risk-moderate">
-                <strong>ELEVATED WATCHFULNESS</strong><br>
-                <small style="color: rgba(255,255,255,0.9);">
-                Moderate HF disruptions possible. Enhanced monitoring required.
-                </small>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            **Recommended Actions:**
-            - 📋 Test backup communication systems
-            - 📋 Brief operators on potential disruptions
-            - 📋 Monitor HF channel quality
-            - 📋 Document communication anomalies
-            - 📋 Review contingency procedures
-            """)
-        else:
-            st.markdown("""
-            <div class="risk-indicator risk-low">
-                <strong>ROUTINE OPERATIONS</strong><br>
-                <small style="color: rgba(255,255,255,0.9);">
-                Minimal HF impact expected. Standard monitoring sufficient.
-                </small>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            **Standard Procedures:**
-            - ℹ️ Maintain routine monitoring
-            - ℹ️ Continue normal HF operations
-            - ℹ️ Log any unusual activity
-            - ℹ️ Keep backup systems ready
-            """)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Data quality indicator
-        data_quality_score = 100
-        if correlation < 0.4:
-            data_quality_score -= 20
-        if volatility > 20:
-            data_quality_score -= 15
-        if severe_events == 0 and peak_solar < 30:
-            data_quality_score -= 10  # Limited event diversity
-        
-        quality_color = '#48bb78' if data_quality_score >= 80 else '#ed8936' if data_quality_score >= 60 else '#f56565'
-        
-        st.markdown(f"""
-        <div class="info-card" style="border-left: 3px solid {quality_color};">
-            <strong>Forecast Reliability</strong><br>
-            <div style="font-size: 2rem; color: {quality_color}; font-weight: 700; margin: 0.5rem 0;">{data_quality_score}%</div>
-            <small style="color: rgba(255,255,255,0.7);">
-            Based on correlation strength, volatility, and event coverage
-            </small>
         </div>
-        """, unsafe_allow_html=True)
+        """
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    hourly_html += "</div>"
     
-    # Trend Analysis
-    st.markdown("#### 📈 Trend Analysis")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Solar trend
-        trend_emoji = '📈' if solar_trend > 0 else '📉' if solar_trend < 0 else '➡️'
-        trend_color = '#f56565' if solar_trend > 5 else '#48bb78' if solar_trend < -5 else '#4299e1'
-        
-        st.markdown(f"""
-        <div class="info-card">
-            <strong>Solar Activity Trend {trend_emoji}</strong><br>
-            <div style="color: {trend_color}; font-size: 1.5rem; font-weight: 700; margin: 0.5rem 0;">
-                {solar_trend:+.1f}%
-            </div>
-            <small style="color: rgba(255,255,255,0.7);">
-            {"Increasing" if solar_trend > 0 else "Decreasing" if solar_trend < 0 else "Stable"} over 24h period
-            <br>First 12h avg: {solar_df['flare_probability'].iloc[:12].mean()*100:.1f}%
-            <br>Last 12h avg: {solar_df['flare_probability'].iloc[12:].mean()*100:.1f}%
-            </small>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        # HF trend
-        hf_trend_emoji = '📈' if hf_trend > 0 else '📉' if hf_trend < 0 else '➡️'
-        hf_trend_color = '#f56565' if hf_trend > 5 else '#48bb78' if hf_trend < -5 else '#4299e1'
-        
-        st.markdown(f"""
-        <div class="info-card">
-            <strong>HF Blackout Trend {hf_trend_emoji}</strong><br>
-            <div style="color: {hf_trend_color}; font-size: 1.5rem; font-weight: 700; margin: 0.5rem 0;">
-                {hf_trend:+.1f}%
-            </div>
-            <small style="color: rgba(255,255,255,0.7);">
-            {"Increasing" if hf_trend > 0 else "Decreasing" if hf_trend < 0 else "Stable"} over 24h period
-            <br>First 12h avg: {hf_df['hf_blackout_probability'].iloc[:12].mean()*100:.1f}%
-            <br>Last 12h avg: {hf_df['hf_blackout_probability'].iloc[12:].mean()*100:.1f}%
-            </small>
-        </div>
-        """, unsafe_allow_html=True)
+    # Use components.html for better rendering of large HTML
+    import streamlit.components.v1 as components
+    components.html(hourly_html, height=420, scrolling=False)
+
 
 # Footer
-st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown("**Powered by**: Surya Foundation Model")
-    st.caption("366M parameters • Pattern recognition")
-
-with col2:
-    st.markdown("**Forecast Horizon**: 24 hours")
-    st.caption("Updated in real-time")
-
-with col3:
+footer_col1, footer_col2, footer_col3 = st.columns(3)
+with footer_col1:
+    st.markdown("**Solar Flare Forecast Model** v2.0")
+with footer_col2:
     if solar_df is not None:
-        timestamp = pd.to_datetime(solar_df['timestamp'].iloc[0])
-        st.markdown(f"**Last Updated**: {timestamp.strftime('%Y-%m-%d %H:%M UTC')}")
-        st.caption("Enterprise monitoring system")
+        st.markdown(f"**Last Updated:** 2026-02-02 00:49:04 UTC")
+with footer_col3:
+    st.markdown("**Powered by:** NASA NOAA Space Weather Data")
