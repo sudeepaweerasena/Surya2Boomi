@@ -15,7 +15,7 @@ st.set_page_config(
     page_title="HF Blackout Forecast System",
     page_icon="📡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # NASA Space Theme CSS
@@ -452,7 +452,7 @@ st.markdown("""
     }
     
     section[data-testid="stSidebar"] > div {
-        padding: 2rem 1.5rem;
+        padding: 1rem 1.5rem;
     }
     
     /* Sidebar buttons */
@@ -501,13 +501,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Header with NASA-style design
-st.markdown("""
-<div class="main-header">
-    <p style="font-size: 1.8rem; font-weight: 700; margin: 0; color: #00d9ff;">📡 HF BLACKOUT FORECAST</p>
-    <p style="font-size: 1rem; font-weight: 400; margin: 0; color: #8b9dc3;">24-Hour Solar Activity Monitoring</p>
-</div>
-""", unsafe_allow_html=True)
+
 
 # Load data (using session state)
 def get_current_forecasts():
@@ -556,173 +550,133 @@ if "auto_generated" not in st.session_state:
     generate_forecasts()
     st.session_state.auto_generated = True
     st.rerun()
-# Sidebar (keeping your existing sidebar)
-with st.sidebar:
-    st.markdown("""
-    <div style="text-align: center; margin-bottom: 1.5rem;">
-        <h3 style="
-            color: #00d9ff; 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 1rem; 
-            letter-spacing: 2px;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        ">
-            ⚙️ CONTROL PANEL
-        </h3>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Generate forecast button with gradient styling
-    if st.button("🔄 GENERATE NEW FORECAST", use_container_width=True, type="primary"):
-        generate_forecasts()
-        st.rerun()
-    
-    st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
-    
-    # System status
-    st.markdown("""
-    <div style="margin-bottom: 1rem;">
-        <div style="
-            color: #00d9ff; 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 0.85rem; 
-            letter-spacing: 1.5px;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        ">
-            📊 SYSTEM STATUS
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
-            <span class="status-dot"></span>
-            <strong style="color: #4ade80; font-size: 0.95rem;">OPERATIONAL</strong>
-        </div>
-        <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem; line-height: 1.5;">
-            All systems nominal<br>
-            Last updated: Just now
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Data sources
-    st.markdown("""
-    <div style="margin-bottom: 1rem;">
-        <div style="
-            color: #00d9ff; 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 0.85rem; 
-            letter-spacing: 1.5px;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        ">
-            📡 DATA SOURCES
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
-        <strong style="color: #00d9ff; font-size: 0.95rem;">Surya Foundation Model</strong><br>
-        <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 0.5rem; line-height: 1.6;">
-            • 366M parameters<br>
-            • Pattern-based analysis<br>
-            • 24-hour horizon
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # About
-    st.markdown("""
-    <div style="margin-bottom: 1rem;">
-        <div style="
-            color: #00d9ff; 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 0.85rem; 
-            letter-spacing: 1.5px;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        ">
-            ℹ️ ABOUT
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="glass-card" style="padding: 1rem;">
-        <div style="color: rgba(255,255,255,0.7); font-size: 0.85rem; line-height: 1.6;">
-            NASA-inspired space weather monitoring powered by AI-driven pattern recognition and historical correlation analysis.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
 # Load data
 solar_df, hf_df = get_current_forecasts()
 
 if solar_df is None or hf_df is None:
-    st.warning("⚠️ No forecast data available. Please generate forecasts using the control panel.")
-    st.stop()
+    # If no data, show warning but don't crash - though stop() is fine here
+    if not st.session_state.get('auto_generated', False):
+         # If distinct from auto-gen failure
+        st.warning("⚠️ No forecast data available. Please generate forecasts using the control panel.")
+        st.stop()
+    else:
+        st.stop() # Should have been handled by auto-gen logic
 
-# UTC Time and Quick Metrics Header
+# Calculate metrics for header
 current_time = datetime.utcnow()
-st.markdown(f"""
-<div class="utc-time">{current_time.strftime('%H:%M:%S')} UTC</div>
-<div style="text-align: center; margin-top: 0.5rem; margin-bottom: 1.5rem;">
-    <span class="status-dot"></span>
-    <span style="color: #4ade80; font-size: 0.85rem; font-weight: 600;">SYSTEM OPERATIONAL</span>
-</div>
+avg_solar = solar_df['flare_probability'].mean() * 100
+# avg_hf used later
+avg_hf = hf_df['hf_blackout_probability'].mean() * 100 
+confidence_avg = hf_df['confidence'].mean() * 100
+current_solar_class = solar_df.iloc[0]['flare_class']
+
+# CSS for Header and Button
+st.markdown("""
+<style>
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(90deg, #00d9ff 0%, #0077ff 100%);
+        border: none;
+        color: #000;
+        font-weight: 700;
+        font-family: 'Orbitron', sans-serif;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        width: 45% !important;
+        display: block !important;
+        margin: -5px 0 0 auto !important; /* Right align effectively or use margin auto for center */
+        padding: 0.2rem 0.4rem !important;
+        font-size: 0.7rem !important;
+        min-height: auto !important;
+        height: auto !important;
+        line-height: 1.2 !important;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        box-shadow: 0 0 15px rgba(0, 217, 255, 0.6);
+        color: #000;
+        /* Removed padding override to prevent jumping */
+    }
+    div.stButton > button[kind="primary"]:active {
+        color: #000;
+        background: linear-gradient(90deg, #00c3e6 0%, #0066d9 100%);
+    }
+</style>
 """, unsafe_allow_html=True)
 
-# Quick metrics in header
-metric_col1, metric_col2, metric_col3 = st.columns(3)
+# New Header Layout
+header_col1, header_col2 = st.columns([2.5, 1.2], gap="medium")
 
-# Calculate metrics
-avg_solar = solar_df['flare_probability'].mean() * 100
-avg_hf = hf_df['hf_blackout_probability'].mean() * 100
-confidence_avg = hf_df['confidence'].mean() * 100
-
-with metric_col1:
-    st.markdown(f"""
-    <div class="metric-mini">
-        <div class="metric-mini-label">Solar Activity</div>
-        <div class="metric-mini-value">{solar_df.iloc[0]['flare_class']}-Class</div>
+with header_col1:
+    st.markdown("""
+    <div style="display: flex; align-items: center; gap: 1.5rem; height: 100%; padding-top: 1rem;">
+        <div style="
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <span style="font-size: 2.5rem;">📡</span>
+        </div>
+        <div>
+            <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: #e2e8f0; letter-spacing: 2px;">HF BLACKOUT FORECAST</div>
+            <p style="
+                font-family: 'Rajdhani', sans-serif;
+                font-size: 1rem;
+                font-weight: 500;
+                margin: 0.2rem 0 0 0;
+                color: #8b9dc3;
+                letter-spacing: 4px;
+                text-transform: uppercase;
+            ">24-Hour Solar Activity Monitoring</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-with metric_col2:
+with header_col2:
+    # Time
     st.markdown(f"""
-    <div class="metric-mini">
-        <div class="metric-mini-label">Active Alerts</div>
-        <div class="metric-mini-value">3</div>
+    <div style="text-align: right; margin-bottom: 0.5rem;">
+        <div style="
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #00d9ff;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+            letter-spacing: 2px;
+        ">{current_time.strftime('%H:%M:%S')} UTC</div>
     </div>
     """, unsafe_allow_html=True)
-
-with metric_col3:
+    
+    # Status
     st.markdown(f"""
-    <div class="metric-mini">
-        <div class="metric-mini-label">Avg Confidence</div>
-        <div class="metric-mini-value">{confidence_avg:.0f}%</div>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+        <div style="
+            border: 1px solid #4ade80;
+            border-radius: 4px;
+            padding: 0.2rem 0.5rem;
+            background: rgba(74, 222, 128, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        ">
+            <div style="width: 6px; height: 6px; background-color: #4ade80; border-radius: 50%; box-shadow: 0 0 5px #4ade80;"></div>
+            <span style="color: #e2e8f0; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 2px;">SYSTEM OPERATIONAL</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Button
+    if st.button("Refresh", type="primary", use_container_width=True):
+        generate_forecasts()
+        st.rerun()
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div style="height: 1px; background: rgba(255,255,255,0.1); margin-top: 0.5rem; margin-bottom: 1.5rem;"></div>', unsafe_allow_html=True)
+
+
+
 
 # Main Dashboard Grid (2-column layout)
-left_col, right_col = st.columns([2, 1])
+left_col, right_col = st.columns([2, 1], gap="large")
 
 # LEFT PANEL - Main Chart and Supporting Info
 with left_col:
@@ -1040,9 +994,9 @@ st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
 footer_col1, footer_col2, footer_col3 = st.columns(3)
 with footer_col1:
-    st.markdown("**Solar Flare Forecast Model** v2.0")
+    st.markdown("**Surya2Boomi** v1.0")
 with footer_col2:
     if solar_df is not None:
         st.markdown(f"**Last Updated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
 with footer_col3:
-    st.markdown("**Powered by:** NASA NOAA Space Weather Data")
+    st.markdown('<div style="text-align: right;"><b>Built by:</b> Sudeepa Weerasena</div>', unsafe_allow_html=True)
