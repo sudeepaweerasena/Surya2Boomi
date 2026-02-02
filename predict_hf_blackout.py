@@ -26,9 +26,11 @@ def load_models(model_path):
         with open(model_path, 'rb') as f:
             models = pickle.load(f)
         
-        print("✓ Loaded ML models successfully")
-        print(f"  - Severity Model: {type(models['severity_model']).__name__}")
-        print(f"  - Probability Model: {type(models['probability_model']).__name__}")
+        # Only print when running as script
+        if __name__ == "__main__":
+            print("✓ Loaded ML models successfully")
+            print(f"  - Severity Model: {type(models['severity_model']).__name__}")
+            print(f"  - Probability Model: {type(models['probability_model']).__name__}")
         
         return models
     except Exception as e:
@@ -37,7 +39,8 @@ def load_models(model_path):
 def load_solar_flare_forecast(filepath):
     """Load solar flare forecast CSV"""
     df = pd.read_csv(filepath)
-    print(f"✓ Loaded {len(df)} hours of solar flare forecast")
+    if __name__ == "__main__":
+        print(f"✓ Loaded {len(df)} hours of solar flare forecast")
     return df
 
 def prepare_features(solar_flare_df, flare_class_encoder):
@@ -53,7 +56,8 @@ def prepare_features(solar_flare_df, flare_class_encoder):
         df['flare_class_encoded'] = flare_class_encoder.transform(df['flare_class'])
     except Exception as e:
         # If the encoder doesn't recognize the class, use a default mapping
-        print(f"⚠️  Warning: Using fallback encoding for flare classes")
+        if __name__ == "__main__":
+            print(f"⚠️  Warning: Using fallback encoding for flare classes")
         flare_class_mapping = {'B': 0, 'C': 1, 'M': 2, 'X': 3}
         df['flare_class_encoded'] = df['flare_class'].map(flare_class_mapping).fillna(0)
     
@@ -94,7 +98,8 @@ def predict_with_ml_models(models, features):
     try:
         severities = severity_encoder.inverse_transform(severity_encoded)
     except Exception as e:
-        print(f"⚠️  Warning: Error decoding severities, using fallback classification")
+        if __name__ == "__main__":
+            print(f"⚠️  Warning: Error decoding severities, using fallback classification")
         severities = classify_severity_from_probability(probabilities)
     
     return probabilities, severities
@@ -125,10 +130,21 @@ def classify_severity_from_probability(probabilities):
             severities.append('R5')
     return np.array(severities)
 
-def generate_hf_blackout_forecast(solar_flare_df, models):
-    """Generate 24-hour HF blackout forecast from solar flare forecast using ML models"""
+def generate_hf_blackout_forecast(solar_flare_df, models, save_csv=False):
+    """
+    Generate 24-hour HF blackout forecast from solar flare forecast using ML models
     
-    print("\n🔮 Generating HF Radio Blackout Forecast with ML Models...")
+    Args:
+        solar_flare_df (pd.DataFrame): Input solar flare forecast data
+        models (dict): Loaded ML models
+        save_csv (bool): Whether to save forecast to CSV
+        
+    Returns:
+        pd.DataFrame: HF forecast
+    """
+    
+    if __name__ == "__main__":
+        print("\n🔮 Generating HF Radio Blackout Forecast with ML Models...")
     
     # Make a copy
     forecast_df = solar_flare_df.copy()
@@ -159,6 +175,16 @@ def generate_hf_blackout_forecast(solar_flare_df, models):
         'blackout_severity',
         'confidence'
     ]].copy()
+    
+    # Save output if requested
+    if save_csv:
+        # Use a default filename if running as library, or proper one if script
+        script_dir = Path(__file__).parent if __file__ else Path.cwd()
+        output_path = script_dir / OUTPUT_FILE
+        save_forecast(output_df, output_path)
+        
+        # Only print summary when saving (usually means script mode)
+        print_summary(output_df)
     
     return output_df
 
@@ -237,14 +263,10 @@ def main():
         # Load solar flare forecast
         solar_flare_df = load_solar_flare_forecast(input_path)
         
-        # Generate HF blackout forecast
-        hf_blackout_df = generate_hf_blackout_forecast(solar_flare_df, models)
+        # Generate HF blackout forecast (save_csv=True for script mode)
+        hf_blackout_df = generate_hf_blackout_forecast(solar_flare_df, models, save_csv=True)
         
-        # Save output
-        save_forecast(hf_blackout_df, output_path)
-        
-        # Print summary
-        print_summary(hf_blackout_df)
+        # Summary is printed inside generate_hf_blackout_forecast when save_csv=True
         
         print("\n✨ Pipeline completed successfully!")
         print(f"   Input:  {INPUT_FILE}")

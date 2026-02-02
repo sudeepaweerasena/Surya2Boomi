@@ -3,10 +3,12 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime
-from pathlib import Path
-import subprocess
-import sys
+from datetime import datetime
 import numpy as np
+
+# Import forecast modules
+import generate_forecast
+import predict_hf_blackout
 
 # Page configuration
 st.set_page_config(
@@ -507,41 +509,46 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Load data function
-@st.cache_data(ttl=60)
-def load_forecast_data():
-    """Load both solar flare and HF blackout forecast data"""
-    solar_path = Path("solar_flare_forecast_24h.csv")
-    hf_path = Path("hf_blackout_forecast_24h.csv")
-    
-    solar_df = None
-    hf_df = None
-    
-    if solar_path.exists():
-        solar_df = pd.read_csv(solar_path)
-    
-    if hf_path.exists():
-        hf_df = pd.read_csv(hf_path)
-    
-    return solar_df, hf_df
+# Load data (using session state)
+def get_current_forecasts():
+    """Get current forecasts from session state or generate default"""
+    if 'solar_df' not in st.session_state:
+        st.session_state.solar_df = None
+    if 'hf_df' not in st.session_state:
+        st.session_state.hf_df = None
+        
+    return st.session_state.solar_df, st.session_state.hf_df
+
+@st.cache_resource
+def get_models():
+    """Load and cache the models"""
+    try:
+        return predict_hf_blackout.load_models("radio_blackout_models.pkl")
+    except Exception as e:
+        st.error(f"Failed to load models: {e}")
+        return None
 
 def generate_forecasts():
-    """Generate both forecasts"""
+    """Generate both forecasts in-memory and update session state"""
     try:
         with st.spinner("⚡ Generating solar flare forecast..."):
-            result_solar = subprocess.run([sys.executable, "generate_forecast.py"], capture_output=True, text=True)
-            if result_solar.returncode != 0:
-                st.error(f"Solar Forecast Error:\nSTDERR:\n{result_solar.stderr}\nSTDOUT:\n{result_solar.stdout}")
-                return
-    
+             # Generate solar data (in-memory, no CSV)
+            solar_df = generate_forecast.generate_24hour_forecast(save_csv=False)
+            
         with st.spinner("📡 Predicting HF radio blackouts..."):
-            result_hf = subprocess.run([sys.executable, "predict_hf_blackout.py"], capture_output=True, text=True)
-            if result_hf.returncode != 0:
-                st.error(f"HF Blackout Prediction Error:\nSTDERR:\n{result_hf.stderr}\nSTDOUT:\n{result_hf.stdout}")
+            models = get_models()
+            if models is None:
                 return
+                
+            # Generate HF blackout forecast (in-memory, no CSV)
+            hf_df = predict_hf_blackout.generate_hf_blackout_forecast(solar_df, models, save_csv=False)
+        
+        # Update session state
+        st.session_state.solar_df = solar_df
+        st.session_state.hf_df = hf_df
         
         st.success("✅ Forecasts generated successfully!")
-        st.cache_data.clear()
+        
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
 
@@ -660,7 +667,7 @@ with st.sidebar:
 
 
 # Load data
-solar_df, hf_df = load_forecast_data()
+solar_df, hf_df = get_current_forecasts()
 
 if solar_df is None or hf_df is None:
     st.warning("⚠️ No forecast data available. Please generate forecasts using the control panel.")

@@ -8,8 +8,16 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta, timezone
 
-def generate_24hour_forecast():
-    """Generate 24-hour forecast with realistic probabilities"""
+def generate_24hour_forecast(save_csv=False):
+    """
+    Generate 24-hour forecast with realistic probabilities
+    
+    Args:
+        save_csv (bool): Whether to save the forecast to a CSV file. Default is False.
+        
+    Returns:
+        pd.DataFrame: The generated forecast data.
+    """
     
     # Start time
     base_time = datetime.now(timezone.utc)
@@ -57,31 +65,32 @@ def generate_24hour_forecast():
     # Create DataFrame
     df = pd.DataFrame(forecast_data)
     
-    # Save to CSV
-    output_path = 'solar_flare_forecast_24h.csv'
-    df.to_csv(output_path, index=False)
-    
-    print(f"✅ Generated 24-hour forecast:")
-    print(f"   File: {output_path}")
-    print(f"   Hours: {len(df)}")
-    print(f"\n📊 Forecast Summary:")
-    print(f"   Average probability: {df['flare_probability'].mean()*100:.2f}%")
-    print(f"   Peak probability: {df['flare_probability'].max()*100:.2f}% (hour {df.loc[df['flare_probability'].idxmax(), 'hour']})")
-    print(f"   Risk level: ", end='')
-    
-    max_prob = df['flare_probability'].max()
-    if max_prob > 0.7:
-        print("🔴 HIGH RISK")
-    elif max_prob > 0.4:
-        print("🟡 MODERATE RISK")
-    else:
-        print("🟢 LOW RISK")
-    
-    print(f"\n💾 Saved to: {output_path}")
+    if save_csv:
+        # Save to CSV
+        output_path = 'solar_flare_forecast_24h.csv'
+        df.to_csv(output_path, index=False)
+        
+        print(f"✅ Generated 24-hour forecast:")
+        print(f"   File: {output_path}")
+        print(f"   Hours: {len(df)}")
+        print(f"\n📊 Forecast Summary:")
+        print(f"   Average probability: {df['flare_probability'].mean()*100:.2f}%")
+        print(f"   Peak probability: {df['flare_probability'].max()*100:.2f}% (hour {df.loc[df['flare_probability'].idxmax(), 'hour']})")
+        print(f"   Risk level: ", end='')
+        
+        max_prob = df['flare_probability'].max()
+        if max_prob > 0.7:
+            print("🔴 HIGH RISK")
+        elif max_prob > 0.4:
+            print("🟡 MODERATE RISK")
+        else:
+            print("🟢 LOW RISK")
+        
+        print(f"\n💾 Saved to: {output_path}")
     
     return df
 
 if __name__ == "__main__":
-    df = generate_24hour_forecast()
+    df = generate_24hour_forecast(save_csv=True)
     print("\n📋 First 5 hours:")
     print(df.head().to_string(index=False))
