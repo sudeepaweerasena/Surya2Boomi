@@ -1,7 +1,13 @@
-# Solar Flare Forecasting - Local Client Dependencies
+# Solar Flare Forecasting - Streamlit Cloud Dependencies
 
-# Core dependencies for the local API client
-requests>=2.31.0
+# App Framework & Viz
+streamlit>=1.30.0
+plotly>=5.18.0
+pandas>=2.0.0
+numpy>=1.24.0
 
-# Optional: For better CLI output formatting
-colorama>=0.4.6
+# Dependencies for the Surya package (handled automatically by pip, but good to be explicit for caching)
+# Note: PyTorch will be installed by Surya's dependencies
+
+# Install the local Surya package
+./Surya
