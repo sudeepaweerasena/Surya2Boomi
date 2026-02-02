@@ -841,7 +841,8 @@ with left_col:
     peak_col1, peak_col2, peak_col3 = st.columns(3)
     
     for col, (idx, row) in zip([peak_col1, peak_col2, peak_col3], peak_hours_df.iterrows()):
-        hour = int(row['hour'])
+        timestamp = pd.to_datetime(row['timestamp'])
+        time_str = timestamp.strftime('%H:%M')
         prob = row['hf_blackout_probability'] * 100
         severity = row['blackout_severity']
         
@@ -856,9 +857,9 @@ with left_col:
         with col:
             st.markdown(f"""
             <div class="glass-card" style="text-align: center; border: 1px solid {severity_colors.get(severity, '#ffd700')}40; padding: 1rem;">
-                <div style="font-family: 'Share Tech Mono'; color: #ff6b35; font-size: 1rem; margin-bottom: 0.5rem;">{hour:02d}:49 UTC</div>
+                <div style="font-family: 'Share Tech Mono'; color: #ff6b35; font-size: 1rem; margin-bottom: 0.5rem;">{time_str} UTC</div>
                 <span class="severity-badge badge-{severity.lower()}">{severity}</span>
-                <div style="font-size: 0.85rem; color: #8b9dc3; margin-top: 0.5rem;">60.0% Risk</div>
+                <div style="font-size: 0.85rem; color: #8b9dc3; margin-top: 0.5rem;">{prob:.1f}% Risk</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -871,16 +872,19 @@ with right_col:
     max_idx = hf_df['hf_blackout_probability'].idxmax()
     max_row = hf_df.iloc[max_idx]
     max_hour = int(max_row['hour'])
+    # Format time from timestamp
+    max_time_str = pd.to_datetime(max_row['timestamp']).strftime('%H:%M')
     max_prob = max_row['hf_blackout_probability'] * 100
     max_severity = max_row['blackout_severity']
+    max_class = max_row['flare_class']
     
     st.markdown(f"""
     <div class="glass-card" style="border-left: 3px solid #ff6b35; padding: 1rem;">
         <div style="font-size: 0.65rem; color: #8b9dc3; letter-spacing: 1px; margin-bottom: 0.5rem;">⚠️ HIGHEST RISK PERIOD</div>
-        <div style="font-family: 'Share Tech Mono'; color: #00d9ff; font-size: 1.2rem; margin-bottom: 0.5rem;">{max_hour:02d}:49 UTC</div>
-        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Severity: <strong>{max_severity} (Moderate)</strong></p>
-        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Probability: <strong>60.8%</strong></p>
-        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Flare Class: <strong>C-Class</strong></p>
+        <div style="font-family: 'Share Tech Mono'; color: #00d9ff; font-size: 1.2rem; margin-bottom: 0.5rem;">{max_time_str} UTC</div>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Severity: <strong>{max_severity}</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Probability: <strong>{max_prob:.1f}%</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Flare Class: <strong>{max_class}-Class</strong></p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -888,14 +892,18 @@ with right_col:
     min_idx = hf_df['hf_blackout_probability'].idxmin()
     min_row = hf_df.iloc[min_idx]
     min_hour = int(min_row['hour'])
+    min_time_str = pd.to_datetime(min_row['timestamp']).strftime('%H:%M')
+    min_prob = min_row['hf_blackout_probability'] * 100
+    min_severity = min_row['blackout_severity']
+    min_class = min_row['flare_class']
     
     st.markdown(f"""
     <div class="glass-card" style="border-left: 3px solid #4ade80; padding: 1rem; margin-top: 1rem;">
         <div style="font-size: 0.65rem; color: #8b9dc3; letter-spacing: 1px; margin-bottom: 0.5rem;">🛡️ LOWEST RISK PERIOD</div>
-        <div style="font-family: 'Share Tech Mono'; color: #00d9ff; font-size: 1.2rem; margin-bottom: 0.5rem;">{min_hour:02d}:49 UTC</div>
-        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Severity: <strong>R1 (Minor)</strong></p>
-        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Probability: <strong>29.7%</strong></p>
-        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Flare Class: <strong>B-Class</strong></p>
+        <div style="font-family: 'Share Tech Mono'; color: #00d9ff; font-size: 1.2rem; margin-bottom: 0.5rem;">{min_time_str} UTC</div>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Severity: <strong>{min_severity}</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Probability: <strong>{min_prob:.1f}%</strong></p>
+        <p style="margin: 0.15rem 0; color: #e8f4f8; font-size: 0.85rem;">Flare Class: <strong>{min_class}-Class</strong></p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1007,6 +1015,6 @@ with footer_col1:
     st.markdown("**Solar Flare Forecast Model** v2.0")
 with footer_col2:
     if solar_df is not None:
-        st.markdown(f"**Last Updated:** 2026-02-02 00:49:04 UTC")
+        st.markdown(f"**Last Updated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
 with footer_col3:
     st.markdown("**Powered by:** NASA NOAA Space Weather Data")
