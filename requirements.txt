@@ -1,0 +1,7 @@
+# Solar Flare Forecasting - Local Client Dependencies
+
+# Core dependencies for the local API client
+requests>=2.31.0
+
+# Optional: For better CLI output formatting
+colorama>=0.4.6

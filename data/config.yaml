@@ -1,0 +1,31 @@
+model:
+  img_size: 4096
+  patch_size: 16
+  embed_dim: 1280
+  depth: 10
+  n_spectral_blocks: 2
+  num_heads: 16
+  mlp_ratio: 4.0
+  drop_rate: 0.0
+  window_size: 2
+  dp_rank: 4
+  learned_flow: false
+  use_latitude_in_learned_flow: false
+  rpe: false
+  ensemble: null
+  finetune: false
+data:
+  sdo_channels: [
+    "aia94",  "aia131", "aia171", "aia193",
+    "aia211", "aia304", "aia335", "aia1600",
+    "hmi_m",  "hmi_bx", "hmi_by", "hmi_bz",  "hmi_v",
+  ]
+  time_delta_input_minutes: [-60, 0]
+  time_delta_target_minutes: +60
+  n_input_timestamps: 2
+  pooling: 1
+  random_vert_flip: false
+  drop_hmi_probability: 0.0
+  num_mask_aia_channels: 0
+  use_latitude_in_learned_flow: false
+
