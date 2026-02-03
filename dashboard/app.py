@@ -1,16 +1,21 @@
+import sys
+import os
+
+# Add parent directory to path to allow importing sibling modules
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime
-from datetime import datetime
+from datetime import datetime, timezone
 import numpy as np
 
-# Import forecast modules
-import generate_forecast
-import predict_hf_blackout
-
-# Page configuration
+# Import forecast modules from new structure
+from surya_forecasting import generator as generate_forecast
+from pattern_identification import predictor as predict_hf_blackout
 st.set_page_config(
     page_title="HF Blackout Forecast System",
     page_icon="📡",
@@ -517,7 +522,13 @@ def get_current_forecasts():
 def get_models():
     """Load and cache the models"""
     try:
-        return predict_hf_blackout.load_models("radio_blackout_models.pkl")
+        # Resolve absolute path to the model file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        # Model is in pattern_identification/radio_blackout_models.pkl
+        model_path = os.path.join(parent_dir, 'pattern_identification', 'radio_blackout_models.pkl')
+        
+        return predict_hf_blackout.load_models(model_path)
     except Exception as e:
         st.error(f"Failed to load models: {e}")
         return None

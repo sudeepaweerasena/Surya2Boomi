@@ -16,9 +16,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # Configuration
-INPUT_FILE = "solar_flare_forecast_24h.csv"
-OUTPUT_FILE = "hf_blackout_forecast_24h.csv"
-MODEL_FILE = "radio_blackout_models.pkl"
+INPUT_FILE = "../data/solar_flare_forecast_24h.csv" # Relative to script dir
+OUTPUT_FILE = "../data/hf_blackout_forecast_24h.csv"
+MODEL_FILE = "radio_blackout_models.pkl" # In same dir as script
 
 def load_models(model_path):
     """Load trained ML models from pickle file"""

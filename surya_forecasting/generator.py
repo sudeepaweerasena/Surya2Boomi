@@ -67,7 +67,10 @@ def generate_24hour_forecast(save_csv=False):
     
     if save_csv:
         # Save to CSV
-        output_path = 'solar_flare_forecast_24h.csv'
+        import os
+        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+        os.makedirs(data_dir, exist_ok=True)
+        output_path = os.path.join(data_dir, 'solar_flare_forecast_24h.csv')
         df.to_csv(output_path, index=False)
         
         print(f"✅ Generated 24-hour forecast:")
