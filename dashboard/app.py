@@ -803,15 +803,21 @@ with header_col1:
     with info_col:
         st.markdown("""
         <style>
-            /* Info button styling */
-            div[data-testid="column"]:has(button[kind="secondary"]) button {
-                background: rgba(0, 217, 255, 0.15) !important;
+            /* Info button styling - multiple selectors for maximum specificity */
+            button[data-testid="baseButton-secondary"],
+            button[kind="secondary"],
+            div[data-testid="column"]:has(button[kind="secondary"]) button,
+            .stButton > button[type="secondary"],
+            button.st-emotion-cache-7ym5gk {
+                background: transparent !important;
+                background-color: transparent !important;
+                background-image: none !important;
                 border: 1px solid rgba(0, 217, 255, 0.4) !important;
                 border-radius: 50% !important;
-                width: 32px !important;
-                height: 32px !important;
-                min-width: 32px !important;
-                min-height: 32px !important;
+                width: 28px !important;
+                height: 28px !important;
+                min-width: 28px !important;
+                min-height: 28px !important;
                 padding: 0 !important;
                 margin-top: 2.5rem !important;
                 transition: all 0.3s ease !important;
@@ -820,12 +826,18 @@ with header_col1:
                 justify-content: center !important;
             }
             
-            div[data-testid="column"]:has(button[kind="secondary"]) button:hover {
+            button[data-testid="baseButton-secondary"]:hover,
+            button[kind="secondary"]:hover,
+            div[data-testid="column"]:has(button[kind="secondary"]) button:hover,
+            .stButton > button[type="secondary"]:hover {
                 background: rgba(0, 217, 255, 0.3) !important;
+                background-color: rgba(0, 217, 255, 0.3) !important;
                 box-shadow: 0 0 15px rgba(0, 217, 255, 0.5) !important;
                 transform: scale(1.1) !important;
             }
             
+            button[data-testid="baseButton-secondary"] p,
+            button[kind="secondary"] p,
             div[data-testid="column"]:has(button[kind="secondary"]) button p {
                 margin: 0 !important;
                 padding: 0 !important;
