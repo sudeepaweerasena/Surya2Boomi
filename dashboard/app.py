@@ -17,7 +17,7 @@ import numpy as np
 from surya_forecasting import generator as generate_forecast
 from pattern_identification import predictor as predict_hf_blackout
 st.set_page_config(
-    page_title="HF Blackout Forecast System",
+    page_title="SURYA2BOOMI - HF Blackout Forecast System",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -203,7 +203,7 @@ st.markdown("""
     }
     
     /* Buttons */
-    .stButton>button[kind="primary"] {
+    .stButton>button {
         background: linear-gradient(135deg, #00d9ff 0%, #667eea 100%);
         color: white;
         border: none;
@@ -219,31 +219,7 @@ st.markdown("""
         text-transform: uppercase;
     }
     
-    .stButton>button[kind="secondary"] {
-        background: transparent !important;
-        border: 1px solid rgba(0, 217, 255, 0.5) !important;
-        color: #00d9ff !important;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        line-height: 1;
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: border-color 0.3s ease, color 0.3s ease;
-    }
-
-    .stButton>button[kind="secondary"]:hover {
-        background: transparent !important;
-        box-shadow: none !important;
-        border-color: #ffffff !important;
-        color: #ffffff !important;
-    }
-    
-    .stButton>button[kind="primary"]:hover {
+    .stButton>button:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 217, 255, 0.5);
     }
@@ -598,7 +574,7 @@ if solar_df is None or hf_df is None:
         st.stop() # Should have been handled by auto-gen logic
 
 # Calculate metrics for header
-current_time = datetime.now(timezone.utc)
+current_time = datetime.utcnow()
 avg_solar = solar_df['flare_probability'].mean() * 100
 # avg_hf used later
 avg_hf = hf_df['hf_blackout_probability'].mean() * 100 
@@ -638,135 +614,231 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Terms and Information Dialog
+@st.dialog("About & Information", width="large")
+def show_info_dialog():
+    st.markdown("""
+    <style>
+        /* Force dark mode for dialog - override browser light mode */
+        [data-testid="stDialog"],
+        [data-testid="stDialog"] *,
+        [data-testid="stModal"],
+        [data-testid="stModal"] * {
+            color-scheme: dark !important;
+        }
+        
+        /* Dialog backdrop/overlay */
+        [data-testid="stModal"] {
+            background: rgba(0, 0, 0, 0.85) !important;
+        }
+        
+        /* Dialog container - outer */
+        [data-testid="stDialog"] {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%) !important;
+        }
+        
+        /* Dialog inner container - all possible selectors */
+        [data-testid="stDialog"] > div,
+        [data-testid="stDialog"] > div > div,
+        [data-testid="stDialog"] [role="dialog"],
+        [data-testid="stDialog"] section {
+            background: rgba(10, 14, 39, 0.98) !important;
+            background-color: rgba(10, 14, 39, 0.98) !important;
+            border: 1px solid rgba(0, 217, 255, 0.3) !important;
+            box-shadow: 0 0 40px rgba(0, 217, 255, 0.2) !important;
+        }
+        
+        /* Override any white backgrounds */
+        [data-testid="stDialog"] div[class*="st"],
+        [data-testid="stDialog"] section[class*="st"] {
+            background-color: transparent !important;
+        }
+        
+        /* Headers */
+        [data-testid="stDialog"] h1, 
+        [data-testid="stDialog"] h2, 
+        [data-testid="stDialog"] h3,
+        [data-testid="stDialog"] h4,
+        [data-testid="stDialog"] h5,
+        [data-testid="stDialog"] h6 {
+            color: #00d9ff !important;
+            font-family: 'Orbitron', sans-serif !important;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5) !important;
+            background: transparent !important;
+        }
+        
+        /* Text elements */
+        [data-testid="stDialog"] p,
+        [data-testid="stDialog"] li,
+        [data-testid="stDialog"] span,
+        [data-testid="stDialog"] strong,
+        [data-testid="stDialog"] em {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-family: 'Rajdhani', sans-serif !important;
+            background: transparent !important;
+        }
+        
+        /* Markdown container */
+        [data-testid="stDialog"] [data-testid="stMarkdown"],
+        [data-testid="stDialog"] [data-testid="stMarkdownContainer"] {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* Horizontal rules */
+        [data-testid="stDialog"] hr {
+            border-color: rgba(0, 217, 255, 0.3) !important;
+            background: rgba(0, 217, 255, 0.3) !important;
+        }
+        
+        /* Close button styling */
+        [data-testid="stDialog"] button[aria-label="Close"] {
+            color: #00d9ff !important;
+            background: rgba(0, 217, 255, 0.15) !important;
+            border: 1px solid rgba(0, 217, 255, 0.3) !important;
+            border-radius: 4px !important;
+        }
+        
+        [data-testid="stDialog"] button[aria-label="Close"]:hover {
+            background: rgba(0, 217, 255, 0.3) !important;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.4) !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    ### 📡 HF Blackout Forecast System
+    
+    **24-Hour Solar flare Activity Monitoring & HF Radio Blackout Prediction**
+    
+    ---
+    
+    #### 🌟 About This System
+    
+    This advanced forecasting system provides real-time predictions for High Frequency (HF) radio blackouts caused by solar flare activity. 
+    By monitoring solar flare activity patterns, we can predict potential disruptions to radio communications across various frequency bands.
+    
+    #### 🔬 How It Works
+    
+    - **Solar Flare Detection**: Solar flare predictions generated using the Surya forecasting model
+    - **HF Impact Analysis**: Predicts radio blackout severity (R1-R5) for the next 24 hours
+    - **Machine Learning**: Uses advanced algorithms trained on historical data
+    
+    #### 📊 Understanding Solar Flare Class Levels
+    
+    - **B-Class (Minor)**: Small solar flare representing low-level solar activity
+    - **C-Class (Weak)**: Modest solar flare indicating moderate but common solar activity
+    - **M-Class (Moderate)**: Strong solar flare capable of causing significant space-weather disturbances
+    - **X-Class (Severe/Extreme)**: Extremely powerful solar flare representing the highest level of solar activity
+
+    #### 📊 Understanding Severity Levels
+    
+    - **R1 (Minor)**: Weak degradation of HF radio on sunlit side
+    - **R2 (Moderate)**: Limited blackout of HF radio, loss of contact for tens of minutes
+    - **R3 (Strong)**: Wide area blackout, HF radio contact lost for about an hour
+    - **R4 (Severe)**: HF radio blackout on most of sunlit side for one to two hours
+    - **R5 (Extreme)**: Complete HF radio blackout on entire sunlit side for several hours
+    
+    #### ⚠️ Important Terms & Disclaimers
+    
+    **Data Sources**: This system utilizes data from NOAA Space Weather Prediction Center and NASA Solar Dynamics Observatory.
+    
+    **Forecast Accuracy**: Predictions are based on statistical models and historical patterns. Actual conditions may vary. 
+    This system should be used as a guidance tool, not as the sole basis for critical operational decisions.
+    
+    **Refresh Rate**: Forecasts are generated on-demand. Click the "Refresh" button to get the latest predictions.
+    
+    **Time Zone**: All times displayed are in UTC (Coordinated Universal Time).
+    
+    #### 👨‍💻 Developer Information
+    
+    **Project**: Surya2Boomi v1.0  
+    **Developer**: Sudeepa Weerasena  
+    **Purpose**: Educational and research
+    
+    #### 📧 Contact & Support
+    
+    For questions, feedback, or support, please contact.    
+    mailto: sudeepa.20221986@iit.ac.lk
+    
+    ---
+    
+    *This system is provided for informational purposes only. Use at your own discretion.*
+    """)
+
 # New Header Layout
 header_col1, header_col2 = st.columns([2.5, 1.2], gap="medium")
 
-# Terms Dialog
-def show_terms_dialog():
-    st.markdown("""
-    ### 📜 Terms & Information
-    
-    **System Status:**
-    This system provides experimental forecasts based on NASA/NOAA data.
-    
-    **Data Sources:**
-    - Solar Dynamics Observatory (SDO)
-    - GOES Satellite Data
-    - IMPACT Deep Learning Models
-    
-    **Disclaimer:**
-    This tool is for research and educational purposes only. Do not rely on it for mission-critical operations.
-    
-    **Version:** 1.0.0
-    """)
-
-# Check for dialog support
-if hasattr(st, "dialog"):
-    show_terms = st.dialog("Terms & Information")(show_terms_dialog)
-elif hasattr(st, "experimental_dialog"):
-    show_terms = st.experimental_dialog("Terms & Information")(show_terms_dialog)
-else:
-    # Fallback for older Streamlit
-    def show_terms():
-        st.sidebar.markdown("### Terms & Info")
-        show_terms_dialog()
-
-# CSS for the Info Button
-st.markdown("""
-
-""", unsafe_allow_html=True)
-
-# CSS to force Dark Mode on Modals/Dialogs
-st.markdown("""
-<style>
-    /* Target the modal wrapper and content */
-    div[data-testid="stModal"], 
-    div[role="dialog"],
-    section[role="dialog"] {
-        background: #0a0e27 !important;
-        background-color: #0a0e27 !important;
-        color: #e2e8f0 !important;
-        border: 1px solid rgba(0, 217, 255, 0.3) !important;
-        box-shadow: 0 0 50px rgba(0, 217, 255, 0.2) !important;
-    }
-    
-    /* Target child elements to ensure transparency where needed */
-    div[data-testid="stModal"] > div,
-    div[role="dialog"] > div {
-        background-color: transparent !important;
-        color: #e2e8f0 !important;
-    }
-    
-    /* Target the modal close button */
-    div[data-testid="stModal"] button[aria-label="Close"],
-    div[role="dialog"] button[aria-label="Close"] {
-        color: #00d9ff !important;
-    }
-    
-    /* Text styling inside modal */
-    div[data-testid="stModal"] h3,
-    div[role="dialog"] h3 {
-        color: #00d9ff !important;
-        font-family: 'Orbitron', sans-serif !important;
-    }
-    
-    div[data-testid="stModal"] p, 
-    div[data-testid="stModal"] li,
-    div[role="dialog"] p,
-    div[role="dialog"] li {
-        color: #e2e8f0 !important;
-    }
-    
-    /* Force dark background on Markdown containers inside dialogs */
-    div[data-testid="stModal"] div[data-testid="stMarkdownContainer"] p,
-    div[role="dialog"] div[data-testid="stMarkdownContainer"] p {
-        color: #e2e8f0 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 with header_col1:
-    # Use columns to align icon and text block
-    c_icon, c_text = st.columns([0.15, 0.85])
+    # Create a container for the title and subtitle with info button
+    title_col, info_col = st.columns([2, 1])
     
-    with c_icon:
+    with title_col:
         st.markdown("""
-        <div style="
-            width: 64px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 0.5rem;
-        ">
-            <span style="font-size: 2.5rem;">📡</span>
+        <div style="display: flex; align-items: center; gap: 1.5rem; height: 100%; padding-top: 1rem;">
+            <div style="
+                width: 64px;
+                height: 64px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                <span style="font-size: 2.5rem;">📡</span>
+            </div>
+            <div>
+                <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: #e2e8f0; letter-spacing: 2px;">SURYA2BOOMI</div>
+                <p style="
+                    font-family: 'Rajdhani', sans-serif;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    margin: 0.2rem 0 0 0;
+                    color: #8b9dc3;
+                    letter-spacing: 4px;
+                    text-transform: uppercase;
+                ">24-Hour HF Blackout Forecast</p>
+            </div>
         </div>
         """, unsafe_allow_html=True)
-        
-    with c_text:
+    
+    with info_col:
         st.markdown("""
-            <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: #e2e8f0; letter-spacing: 2px; padding-top: 0.5rem;">HF BLACKOUT FORECAST</div>
+        <style>
+            /* Info button styling */
+            div[data-testid="column"]:has(button[kind="secondary"]) button {
+                background: rgba(0, 217, 255, 0.15) !important;
+                border: 1px solid rgba(0, 217, 255, 0.4) !important;
+                border-radius: 50% !important;
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+                min-height: 32px !important;
+                padding: 0 !important;
+                margin-top: 2.5rem !important;
+                transition: all 0.3s ease !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            
+            div[data-testid="column"]:has(button[kind="secondary"]) button:hover {
+                background: rgba(0, 217, 255, 0.3) !important;
+                box-shadow: 0 0 15px rgba(0, 217, 255, 0.5) !important;
+                transform: scale(1.1) !important;
+            }
+            
+            div[data-testid="column"]:has(button[kind="secondary"]) button p {
+                margin: 0 !important;
+                padding: 0 !important;
+                font-family: 'Orbitron', sans-serif !important;
+                font-size: 0.9rem !important;
+                font-weight: 700 !important;
+                color: #00d9ff !important;
+            }
+        </style>
         """, unsafe_allow_html=True)
         
-        # Subtitle and Info Button side-by-side
-        # Use narrow columns to keep them close
-        sub_c1, sub_c2 = st.columns([0.65, 0.35])
-        with sub_c1:
-            st.markdown("""
-            <p style="
-                font-family: 'Rajdhani', sans-serif;
-                font-size: 1rem;
-                font-weight: 500;
-                margin: 0;
-                color: #8b9dc3;
-                letter-spacing: 4px;
-                text-transform: uppercase;
-                white-space: nowrap;
-            ">24-Hour Solar Activity Monitoring</p>
-            """, unsafe_allow_html=True)
-        with sub_c2:
-            if st.button("!", key="terms_btn", help="Terms & Info"):
-                show_terms()
+        if st.button("ℹ", key="info_button", type="secondary"):
+            show_info_dialog()
 
 with header_col2:
     # Time
