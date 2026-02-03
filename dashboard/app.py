@@ -770,87 +770,31 @@ def show_info_dialog():
 header_col1, header_col2 = st.columns([2.5, 1.2], gap="medium")
 
 with header_col1:
-    # Create a container for the title and subtitle with info button
-    title_col, info_col = st.columns([2, 1])
-    
-    with title_col:
-        st.markdown("""
-        <div style="display: flex; align-items: center; gap: 1.5rem; height: 100%; padding-top: 1rem;">
-            <div style="
-                width: 64px;
-                height: 64px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            ">
-                <span style="font-size: 2.5rem;">📡</span>
-            </div>
-            <div>
-                <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: #e2e8f0; letter-spacing: 2px;">SURYA2BOOMI</div>
-                <p style="
-                    font-family: 'Rajdhani', sans-serif;
-                    font-size: 1rem;
-                    font-weight: 500;
-                    margin: 0.2rem 0 0 0;
-                    color: #8b9dc3;
-                    letter-spacing: 4px;
-                    text-transform: uppercase;
-                ">24-Hour HF Blackout Forecast</p>
-            </div>
+    st.markdown("""
+    <div style="display: flex; align-items: center; gap: 1.5rem; height: 100%; padding-top: 1rem;">
+        <div style="
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <span style="font-size: 2.5rem;">📡</span>
         </div>
-        """, unsafe_allow_html=True)
-    
-    with info_col:
-        st.markdown("""
-        <style>
-            /* Info button styling - multiple selectors for maximum specificity */
-            button[data-testid="baseButton-secondary"],
-            button[kind="secondary"],
-            div[data-testid="column"]:has(button[kind="secondary"]) button,
-            .stButton > button[type="secondary"],
-            button.st-emotion-cache-7ym5gk {
-                background: transparent !important;
-                background-color: transparent !important;
-                background-image: none !important;
-                border: 1px solid rgba(0, 217, 255, 0.4) !important;
-                border-radius: 50% !important;
-                width: 28px !important;
-                height: 28px !important;
-                min-width: 28px !important;
-                min-height: 28px !important;
-                padding: 0 !important;
-                margin-top: 2.5rem !important;
-                transition: all 0.3s ease !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-            
-            button[data-testid="baseButton-secondary"]:hover,
-            button[kind="secondary"]:hover,
-            div[data-testid="column"]:has(button[kind="secondary"]) button:hover,
-            .stButton > button[type="secondary"]:hover {
-                background: rgba(0, 217, 255, 0.3) !important;
-                background-color: rgba(0, 217, 255, 0.3) !important;
-                box-shadow: 0 0 15px rgba(0, 217, 255, 0.5) !important;
-                transform: scale(1.1) !important;
-            }
-            
-            button[data-testid="baseButton-secondary"] p,
-            button[kind="secondary"] p,
-            div[data-testid="column"]:has(button[kind="secondary"]) button p {
-                margin: 0 !important;
-                padding: 0 !important;
-                font-family: 'Orbitron', sans-serif !important;
-                font-size: 0.9rem !important;
-                font-weight: 700 !important;
-                color: #00d9ff !important;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        if st.button("ℹ", key="info_button", type="secondary"):
-            show_info_dialog()
+        <div>
+            <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: #e2e8f0; letter-spacing: 2px;">SURYA2BOOMI</div>
+            <p style="
+                font-family: 'Rajdhani', sans-serif;
+                font-size: 1rem;
+                font-weight: 500;
+                margin: 0.2rem 0 0 0;
+                color: #8b9dc3;
+                letter-spacing: 4px;
+                text-transform: uppercase;
+            ">24-Hour HF Blackout Forecast</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with header_col2:
     # Time
@@ -1208,14 +1152,100 @@ with right_col:
     components.html(hourly_html, height=420, scrolling=False)
 
 
-# Footer
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("---")
-footer_col1, footer_col2, footer_col3 = st.columns(3)
-with footer_col1:
-    st.markdown("**Surya2Boomi** v1.0")
-with footer_col2:
-    if solar_df is not None:
-        st.markdown(f"**Last Updated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
-with footer_col3:
-    st.markdown('<div style="text-align: right;"><b>Built by:</b> Sudeepa Weerasena</div>', unsafe_allow_html=True)
+# Professional Footer with functional info button
+st.markdown("""
+<style>
+    /* Footer container styling */
+    .footer-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(10, 14, 39, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(0, 217, 255, 0.2);
+        padding: 0.75rem 2rem;
+        z-index: 999;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Add bottom padding to main content to prevent footer overlap */
+    .main .block-container {
+        padding-bottom: 4rem;
+    }
+    
+    /* Footer button styling */
+    button[data-testid="baseButton-secondary"].footer-info,
+    button[kind="secondary"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: 1px solid rgba(0, 217, 255, 0.4) !important;
+        border-radius: 50% !important;
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        min-height: 20px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        margin-left: -200px !important;
+        transition: all 0.3s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    button[data-testid="baseButton-secondary"].footer-info:hover,
+    button[kind="secondary"]:hover {
+        background: rgba(0, 217, 255, 0.2) !important;
+        background-color: rgba(0, 217, 255, 0.2) !important;
+        box-shadow: 0 0 10px rgba(0, 217, 255, 0.4) !important;
+    }
+    
+    button[data-testid="baseButton-secondary"] p,
+    button[kind="secondary"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: 'Orbitron', sans-serif !important;
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+        color: #00d9ff !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Create footer with columns
+footer_container = st.container()
+with footer_container:
+    st.markdown('<div class="footer-container">', unsafe_allow_html=True)
+    footer_col1, footer_col2, footer_col3 = st.columns([1, 1.5, 1])
+    
+    with footer_col1:
+        # Version with info button inline
+        v_col, i_col = st.columns([3, 1], gap="small")
+        with v_col:
+            st.markdown("""
+                <span style="font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; color: #fff; font-weight: 600;">
+                    Surya2Boomi v1.0
+                </span>
+            """, unsafe_allow_html=True)
+        with i_col:
+            if st.button("ⓘ", key="footer_info_button", type="secondary"):
+                show_info_dialog()
+
+    
+    with footer_col2:
+        st.markdown(f"""
+            <div style="text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; color: rgba(255, 255, 255, 0.7);">
+                Last Updated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+            </div>
+        """, unsafe_allow_html=True)
+    
+    with footer_col3:
+        st.markdown("""
+            <div style="text-align: right; font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; color: rgba(255, 255, 255, 0.8);">
+                Built by: <span style="color: #00d9ff;">Sudeepa Weerasena</span>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
