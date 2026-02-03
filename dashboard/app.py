@@ -203,7 +203,7 @@ st.markdown("""
     }
     
     /* Buttons */
-    .stButton>button {
+    .stButton>button[kind="primary"] {
         background: linear-gradient(135deg, #00d9ff 0%, #667eea 100%);
         color: white;
         border: none;
@@ -219,7 +219,31 @@ st.markdown("""
         text-transform: uppercase;
     }
     
-    .stButton>button:hover {
+    .stButton>button[kind="secondary"] {
+        background: transparent !important;
+        border: 1px solid rgba(0, 217, 255, 0.5) !important;
+        color: #00d9ff !important;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        line-height: 1;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.3s ease, color 0.3s ease;
+    }
+
+    .stButton>button[kind="secondary"]:hover {
+        background: transparent !important;
+        box-shadow: none !important;
+        border-color: #ffffff !important;
+        color: #ffffff !important;
+    }
+    
+    .stButton>button[kind="primary"]:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 217, 255, 0.5);
     }
@@ -574,7 +598,7 @@ if solar_df is None or hf_df is None:
         st.stop() # Should have been handled by auto-gen logic
 
 # Calculate metrics for header
-current_time = datetime.utcnow()
+current_time = datetime.now(timezone.utc)
 avg_solar = solar_df['flare_probability'].mean() * 100
 # avg_hf used later
 avg_hf = hf_df['hf_blackout_probability'].mean() * 100 
@@ -617,32 +641,132 @@ st.markdown("""
 # New Header Layout
 header_col1, header_col2 = st.columns([2.5, 1.2], gap="medium")
 
-with header_col1:
+# Terms Dialog
+def show_terms_dialog():
     st.markdown("""
-    <div style="display: flex; align-items: center; gap: 1.5rem; height: 100%; padding-top: 1rem;">
+    ### 📜 Terms & Information
+    
+    **System Status:**
+    This system provides experimental forecasts based on NASA/NOAA data.
+    
+    **Data Sources:**
+    - Solar Dynamics Observatory (SDO)
+    - GOES Satellite Data
+    - IMPACT Deep Learning Models
+    
+    **Disclaimer:**
+    This tool is for research and educational purposes only. Do not rely on it for mission-critical operations.
+    
+    **Version:** 1.0.0
+    """)
+
+# Check for dialog support
+if hasattr(st, "dialog"):
+    show_terms = st.dialog("Terms & Information")(show_terms_dialog)
+elif hasattr(st, "experimental_dialog"):
+    show_terms = st.experimental_dialog("Terms & Information")(show_terms_dialog)
+else:
+    # Fallback for older Streamlit
+    def show_terms():
+        st.sidebar.markdown("### Terms & Info")
+        show_terms_dialog()
+
+# CSS for the Info Button
+st.markdown("""
+
+""", unsafe_allow_html=True)
+
+# CSS to force Dark Mode on Modals/Dialogs
+st.markdown("""
+<style>
+    /* Target the modal wrapper and content */
+    div[data-testid="stModal"], 
+    div[role="dialog"],
+    section[role="dialog"] {
+        background: #0a0e27 !important;
+        background-color: #0a0e27 !important;
+        color: #e2e8f0 !important;
+        border: 1px solid rgba(0, 217, 255, 0.3) !important;
+        box-shadow: 0 0 50px rgba(0, 217, 255, 0.2) !important;
+    }
+    
+    /* Target child elements to ensure transparency where needed */
+    div[data-testid="stModal"] > div,
+    div[role="dialog"] > div {
+        background-color: transparent !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Target the modal close button */
+    div[data-testid="stModal"] button[aria-label="Close"],
+    div[role="dialog"] button[aria-label="Close"] {
+        color: #00d9ff !important;
+    }
+    
+    /* Text styling inside modal */
+    div[data-testid="stModal"] h3,
+    div[role="dialog"] h3 {
+        color: #00d9ff !important;
+        font-family: 'Orbitron', sans-serif !important;
+    }
+    
+    div[data-testid="stModal"] p, 
+    div[data-testid="stModal"] li,
+    div[role="dialog"] p,
+    div[role="dialog"] li {
+        color: #e2e8f0 !important;
+    }
+    
+    /* Force dark background on Markdown containers inside dialogs */
+    div[data-testid="stModal"] div[data-testid="stMarkdownContainer"] p,
+    div[role="dialog"] div[data-testid="stMarkdownContainer"] p {
+        color: #e2e8f0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+with header_col1:
+    # Use columns to align icon and text block
+    c_icon, c_text = st.columns([0.15, 0.85])
+    
+    with c_icon:
+        st.markdown("""
         <div style="
             width: 64px;
             height: 64px;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-top: 0.5rem;
         ">
             <span style="font-size: 2.5rem;">📡</span>
         </div>
-        <div>
-            <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: #e2e8f0; letter-spacing: 2px;">HF BLACKOUT FORECAST</div>
+        """, unsafe_allow_html=True)
+        
+    with c_text:
+        st.markdown("""
+            <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: #e2e8f0; letter-spacing: 2px; padding-top: 0.5rem;">HF BLACKOUT FORECAST</div>
+        """, unsafe_allow_html=True)
+        
+        # Subtitle and Info Button side-by-side
+        # Use narrow columns to keep them close
+        sub_c1, sub_c2 = st.columns([0.65, 0.35])
+        with sub_c1:
+            st.markdown("""
             <p style="
                 font-family: 'Rajdhani', sans-serif;
                 font-size: 1rem;
                 font-weight: 500;
-                margin: 0.2rem 0 0 0;
+                margin: 0;
                 color: #8b9dc3;
                 letter-spacing: 4px;
                 text-transform: uppercase;
+                white-space: nowrap;
             ">24-Hour Solar Activity Monitoring</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+        with sub_c2:
+            if st.button("!", key="terms_btn", help="Terms & Info"):
+                show_terms()
 
 with header_col2:
     # Time
