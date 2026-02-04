@@ -761,7 +761,7 @@ def show_info_dialog():
     """)
 
 # New Header Layout
-header_col1, header_col2 = st.columns([2.5, 1.2], gap="medium")
+header_col1, header_col2 = st.columns([2.5, 1.2], gap="small")
 
 with header_col1:
     st.markdown("""
@@ -1181,7 +1181,7 @@ st.markdown("""
         min-width: 20px !important;
         min-height: 20px !important;
         padding: 0 !important;
-        margin: 0 !important;
+        margin-left: -150px !important;
         transition: all 0.3s ease !important;
         display: inline-flex !important;
         align-items: center !important;
