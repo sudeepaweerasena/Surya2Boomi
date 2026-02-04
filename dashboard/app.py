@@ -28,21 +28,15 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&family=Share+Tech+Mono&display=swap');
     
-    /* Style Streamlit header to blend in instead of hiding it completely */
+    /* Completely hide Streamlit header */
     header[data-testid="stHeader"] {
-        background: transparent !important;
-        backdrop-filter: none !important;
-    }
-    
-    /* Hide specific header elements but keep the sidebar button */
-    header[data-testid="stHeader"] > div:not([data-testid="collapsedControl"]) {
         display: none !important;
+        visibility: hidden !important;
     }
     
-    /* Keep Deploy button and settings hidden */
+    /* Hide all header elements */
     [data-testid="stToolbar"], 
-    [data-testid="stDecoration"],
-    header[data-testid="stHeader"] button:not([data-testid="collapsedControl"]) {
+    [data-testid="stDecoration"] {
         display: none !important;
     }
     
@@ -1188,7 +1182,6 @@ st.markdown("""
         min-height: 20px !important;
         padding: 0 !important;
         margin: 0 !important;
-        margin-left: -150px !important;
         transition: all 0.3s ease !important;
         display: inline-flex !important;
         align-items: center !important;
@@ -1214,6 +1207,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Horizontal separator
+st.markdown("""
+    <div style="height: 1px; width: 100%; background: linear-gradient(to right, transparent, rgba(0, 217, 255, 0.4), transparent); box-shadow: 0 0 4px rgba(0, 217, 255, 0.3);"></div>
+""", unsafe_allow_html=True)
+
 # Create footer with columns
 footer_container = st.container()
 with footer_container:
@@ -1233,6 +1231,7 @@ with footer_container:
             if st.button("ⓘ", key="footer_info_button", type="secondary"):
                 show_info_dialog()
 
+
     
     with footer_col2:
         st.markdown(f"""
@@ -1240,6 +1239,11 @@ with footer_container:
                 Last Updated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
             </div>
         """, unsafe_allow_html=True)
+    
+    # Horizontal separator
+    st.markdown("""
+        <div style="height: 1px; width: 100%; background: linear-gradient(to right, transparent, rgba(0, 217, 255, 0.4), transparent); box-shadow: 0 0 4px rgba(0, 217, 255, 0.3);"></div>
+    """, unsafe_allow_html=True)
     
     with footer_col3:
         st.markdown("""
