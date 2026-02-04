@@ -7,7 +7,6 @@ import torch
 import torch.distributed as dist
 import wandb
 
-# Now try imports
 from dataset import SolarFlareDataset
 from torch.amp import GradScaler, autocast
 from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
@@ -64,8 +63,8 @@ def apply_peft_lora(
     if not "lora_config" in config["model"].keys():
         print0("No LoRA configuration found. Using default LoRA settings.")
         lora_config = {
-            "r": 8,  # LoRA rank
-            "lora_alpha": 8,  # LoRA alpha parameter
+            "r": 8,  
+            "lora_alpha": 8,  
             "target_modules": [
                 "q_proj",
                 "v_proj",
@@ -73,7 +72,7 @@ def apply_peft_lora(
                 "out_proj",
                 "fc1",
                 "fc2",
-            ],  # Target modules for LoRA
+            ], 
             "lora_dropout": 0.1,
             "bias": "none",
         }

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Generate a 24-hour solar flare forecast CSV file
 This creates realistic-looking forecast data for testing purposes
@@ -52,7 +51,7 @@ def generate_24hour_forecast(save_csv=False):
         elif flare_prob > 0.4:
             flare_class = 'C'  # C-class flare (common)
         else:
-            flare_class = 'B'  # B-class flare (background/weak)
+            flare_class = 'B'  # B-class flare (weak)
         
         forecast_data.append({
             'hour': hour,

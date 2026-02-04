@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 HF Radio Blackout Forecasting Pipeline (ML Model-Based)
 
@@ -16,9 +15,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # Configuration
-INPUT_FILE = "../data/solar_flare_forecast_24h.csv" # Relative to script dir
+INPUT_FILE = "../data/solar_flare_forecast_24h.csv" 
 OUTPUT_FILE = "../data/hf_blackout_forecast_24h.csv"
-MODEL_FILE = "radio_blackout_models.pkl" # In same dir as script
+MODEL_FILE = "radio_blackout_models.pkl" 
 
 def load_models(model_path):
     """Load trained ML models from pickle file"""
