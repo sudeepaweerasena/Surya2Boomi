@@ -1188,7 +1188,7 @@ st.markdown("""
         min-height: 20px !important;
         padding: 0 !important;
         margin: 0 !important;
-        margin-left: -200px !important;
+        margin-left: -150px !important;
         transition: all 0.3s ease !important;
         display: inline-flex !important;
         align-items: center !important;

@@ -1,0 +1,61 @@
+# Performance Testing Configuration
+
+# Test Scenarios
+scenarios:
+  light:
+    description: "Light load testing"
+    iterations: 10
+    concurrent_requests: 1
+    warmup_iterations: 2
+    
+  medium:
+    description: "Medium load testing"
+    iterations: 50
+    concurrent_requests: 5
+    warmup_iterations: 5
+    
+  heavy:
+    description: "Heavy load testing"
+    iterations: 100
+    concurrent_requests: 10
+    warmup_iterations: 10
+
+# Acceptance Thresholds
+thresholds:
+  response_time:
+    forecast_generation_max: 10.0  # seconds
+    model_inference_max: 2.0       # seconds
+    p95_max: 15.0                  # seconds
+    
+  throughput:
+    min_forecasts_per_second: 0.5
+    min_predictions_per_second: 5.0
+    
+  accuracy:
+    min_precision: 0.70
+    min_recall: 0.70
+    min_f1_score: 0.70
+    
+  reliability:
+    min_success_rate: 0.95
+    max_error_rate: 0.05
+    
+  scalability:
+    max_degradation_factor: 2.0  # Max acceptable slowdown under load
+
+# Test Data
+test_data:
+  synthetic_samples: 100
+  batch_sizes: [1, 10, 50, 100]
+  
+# Resource Limits
+resources:
+  max_memory_mb: 2048
+  max_cpu_percent: 80
+  
+# Output Configuration
+output:
+  results_dir: "tests/results"
+  save_json: true
+  save_summary: true
+  verbose: true
