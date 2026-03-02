@@ -7,8 +7,5 @@ pandas>=2.0.0
 numpy>=1.24.0
 scikit-learn>=1.3.0
 
-# Dependencies for the Surya package (handled automatically by pip, but good to be explicit for caching)
-# Note: PyTorch will be installed by Surya's dependencies
-
 # Install the local Surya package
 ./Surya

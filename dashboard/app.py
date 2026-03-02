@@ -760,7 +760,7 @@ def show_info_dialog():
     *This system is provided for informational purposes only. Use at your own discretion.*
     """)
 
-# New Header Layout
+
 header_col1, header_col2 = st.columns([2.5, 1.2], gap="small")
 
 with header_col1:

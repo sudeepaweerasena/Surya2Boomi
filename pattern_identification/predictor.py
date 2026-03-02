@@ -1,13 +1,3 @@
-"""
-HF Radio Blackout Forecasting Pipeline (ML Model-Based)
-
-Takes solar flare forecast CSV as input and predicts HF radio blackout probability
-for the next 24 hours using trained machine learning models.
-
-Input: solar_flare_forecast_24h.csv (24-hour solar flare forecast)
-Output: hf_blackout_forecast_24h.csv (24-hour HF radio blackout forecast)
-"""
-
 import pandas as pd
 import numpy as np
 import pickle
