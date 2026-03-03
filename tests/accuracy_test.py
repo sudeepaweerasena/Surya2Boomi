@@ -27,7 +27,7 @@ from sklearn.metrics import (
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from surya_forecasting import generator
+from solar_flarecasting import generator
 from pattern_identification import predictor
 from tests.test_utils import (
     TestResults, print_header, print_section

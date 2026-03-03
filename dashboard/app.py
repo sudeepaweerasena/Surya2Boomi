@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 import numpy as np
 
 # Import forecast modules from new structure
-from surya_forecasting import generator as generate_forecast
+from solar_flarecasting import generator as generate_forecast
 from pattern_identification import predictor as predict_hf_blackout
 st.set_page_config(
     page_title="SURYA2BOOMI - HF Blackout Forecast System",
